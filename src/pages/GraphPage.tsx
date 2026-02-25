@@ -51,7 +51,7 @@ const GraphPage = () => {
     // Aggregate edges by from+to pair
     const edgeMap = new Map<string, { channel: string; amount: number; count: number }>();
     transactions.forEach((tx) => {
-      const key = `${tx.from_account}-${tx.to_account}`;
+      const key = `${tx.from_account}::${tx.to_account}`;
       const existing = edgeMap.get(key);
       if (existing) {
         existing.amount += Number(tx.amount);
@@ -62,7 +62,7 @@ const GraphPage = () => {
     });
 
     edgeMap.forEach((val, key) => {
-      const [source, target] = key.split("-");
+      const [source, target] = key.split("::");
       elements.push({
         data: {
           id: `e-${key}`,
