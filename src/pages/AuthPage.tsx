@@ -72,7 +72,7 @@ const AuthPage = () => {
             <Shield className="h-7 w-7 text-primary" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">SentinelIQ</h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-1">
               Graph Intelligence Platform
             </p>
