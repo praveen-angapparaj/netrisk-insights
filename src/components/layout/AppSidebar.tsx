@@ -38,8 +38,8 @@ const AppSidebar = () => {
           <Shield className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-sm font-bold text-foreground tracking-tight">NetRisk</h1>
-          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Graph Intelligence</p>
+         <h1 className="text-sm font-bold text-foreground tracking-tight">SentinelIQ</h1>
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Graph Intelligence Platform</p>
         </div>
       </div>
 
