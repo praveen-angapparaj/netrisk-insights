@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Network,
@@ -7,7 +7,10 @@ import {
   Activity,
   Shield,
   Zap,
+  LogOut,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -20,6 +23,13 @@ const navItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+    navigate("/auth");
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-sidebar flex flex-col">
@@ -56,7 +66,14 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      <div className="border-t border-border px-4 py-4">
+      <div className="border-t border-border px-3 py-3 space-y-2">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-150"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </button>
         <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">System Status</p>
           <div className="mt-1 flex items-center gap-2">

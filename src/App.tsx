@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AuthPage from "./pages/AuthPage";
 import Index from "./pages/Index";
 import AccountsPage from "./pages/AccountsPage";
 import AccountDetailPage from "./pages/AccountDetailPage";
@@ -21,13 +23,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/accounts" element={<AccountsPage />} />
-          <Route path="/accounts/:id" element={<AccountDetailPage />} />
-          <Route path="/alerts" element={<AlertsPage />} />
-          <Route path="/graph" element={<GraphPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="/simulate" element={<SimulatePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+          <Route path="/accounts/:id" element={<ProtectedRoute><AccountDetailPage /></ProtectedRoute>} />
+          <Route path="/alerts" element={<ProtectedRoute><AlertsPage /></ProtectedRoute>} />
+          <Route path="/graph" element={<ProtectedRoute><GraphPage /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+          <Route path="/simulate" element={<ProtectedRoute><SimulatePage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
