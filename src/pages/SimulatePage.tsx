@@ -236,18 +236,59 @@ const SimulatePage = () => {
 
         if (isFlagged) {
           const severity = finalRisk > 90 ? "CRITICAL" : finalRisk > 80 ? "HIGH" : "MEDIUM";
-          const reasons: string[] = [];
-          if (velocityScore > 50) reasons.push("High transaction velocity");
-          if (channelScore > 50) reasons.push("Cross-channel activity");
-          if (burstScore > 50) reasons.push("Inward-outward burst pattern");
-          if (isMule) reasons.push("Multi-hop layering detected");
-          if (dormantScore > 0) reasons.push("Dormant account reactivation");
+
+          // Determine alert type and build a realistic, scenario-specific description
+          const isMuleChain1 = muleChain1.some((m) => m.id === account.id);
+          const isMuleChain2 = muleChain2.some((m) => m.id === account.id);
+          const isBurstAccount = account.id === burstAccount.id;
+          const isDormantReactivation = account.dormant_flag && txCount > 0;
+
+          let alertType = "RISK_THRESHOLD";
+          let description = "";
+
+          if (isMuleChain1) {
+            const hopIndex = muleChain1.findIndex((m) => m.id === account.id);
+            alertType = "MULE_CHAIN";
+            const muleDescs = [
+              `Identified as origin node in 4-hop mule chain. ₹${outward.toLocaleString("en-IN")} disbursed across ${txCount} rapid transfers via ${Array.from(channelsByAccount[account.id] || []).join(", ")}. Funds traced through 4 downstream accounts within 20 minutes.`,
+              `Intermediary node (hop ${hopIndex + 1}/4) in layering chain. Received ₹${inward.toLocaleString("en-IN")} and forwarded ${Math.round((outward / Math.max(inward, 1)) * 100)}% within minutes. Device ID ${`MULE_DEV_${hopIndex}`} used exclusively for these transfers.`,
+              `Pass-through account in suspected mule network. ${txCount} transactions detected with ${channelCount} distinct channels. Burst ratio ${Math.round((outward / Math.max(inward, 1)) * 100)}% indicates rapid fund movement with no legitimate holding pattern.`,
+              `Terminal node in 4-hop layering chain. Accumulated ₹${inward.toLocaleString("en-IN")} from upstream mule accounts. Transaction velocity of ${txCount} ops in <30 min exceeds normal account behavior by 12x.`,
+              `Mid-chain mule account receiving structured deposits from hop ${Math.max(0, hopIndex - 1) + 1} and dispersing to hop ${Math.min(4, hopIndex + 1) + 1}. Cross-channel mixing detected: ${Array.from(channelsByAccount[account.id] || []).join(" → ")}.`,
+            ];
+            description = muleDescs[hopIndex] || muleDescs[2];
+          } else if (isMuleChain2) {
+            const hopIndex = muleChain2.findIndex((m) => m.id === account.id);
+            alertType = "MULE_CHAIN";
+            const mule2Descs = [
+              `Source account in secondary 3-hop mule network. ₹${outward.toLocaleString("en-IN")} pushed through ${txCount} transactions in rapid succession. Geographic origin: ${cities[hopIndex + 3]}, India. Device fingerprint MULE2_DEV_${hopIndex} linked to known fraud cluster.`,
+              `Central relay in 3-hop fund layering scheme. Received ₹${inward.toLocaleString("en-IN")} via ${Array.from(channelsByAccount[account.id] || []).join(", ")} and disbursed ${Math.round((outward / Math.max(inward, 1)) * 100)}% within 9 minutes. Pattern consistent with professional mule operation.`,
+              `End-point collection account in 3-hop chain. ${txCount} inbound transfers totaling ₹${inward.toLocaleString("en-IN")} received from intermediary mule. No outward activity suggests cash-out phase via ATM or branch withdrawal.`,
+              `Intermediary mule account with anomalous transaction pattern. Fund transit time < 3 minutes between receipt and forwarding. ${channelCount} channels used to obfuscate trail.`,
+            ];
+            description = mule2Descs[hopIndex] || mule2Descs[1];
+          } else if (isBurstAccount) {
+            alertType = "BURST_ACTIVITY";
+            description = `Cross-channel burst attack detected: ${txCount} transactions across ${channelCount} channels (${Array.from(channelsByAccount[account.id] || []).join(", ")}) within 10 minutes. Total outflow ₹${outward.toLocaleString("en-IN")} distributed to 5 recipient accounts. Pattern indicates automated fraud tool or compromised credentials.`;
+          } else if (isDormantReactivation) {
+            alertType = "DORMANT_REACTIVATION";
+            description = `Dormant account suddenly reactivated after extended inactivity period. ${txCount} high-value transactions totaling ₹${outward.toLocaleString("en-IN")} initiated via UPI. Average transaction amount ₹${Math.round(outward / Math.max(txCount, 1)).toLocaleString("en-IN")} significantly exceeds historical account behavior. Possible account takeover or recruited mule.`;
+          } else if (velocityScore > 60 && channelScore > 40) {
+            alertType = "VELOCITY_ANOMALY";
+            description = `Unusual transaction velocity: ${txCount} operations detected across ${channelCount} channels within monitoring window. Outward flow ₹${outward.toLocaleString("en-IN")} with ${Math.round((outward / Math.max(inward, 1)) * 100)}% disbursement ratio. Behavioral pattern deviates from account baseline by ${Math.round(velocityScore / 10)}x standard deviation.`;
+          } else if (burstScore > 50) {
+            alertType = "RAPID_DISBURSEMENT";
+            description = `Rapid fund disbursement detected: ${Math.round((outward / Math.max(inward, 1)) * 100)}% of received funds (₹${inward.toLocaleString("en-IN")}) transferred out within short window. ${channelCount > 2 ? `Multiple channels (${Array.from(channelsByAccount[account.id] || []).join(", ")}) used to distribute funds.` : "Single channel used for bulk transfer."} Risk pattern consistent with money laundering layering stage.`;
+          } else {
+            alertType = "RISK_THRESHOLD";
+            description = `Composite risk score ${finalRisk} exceeds threshold. Contributing factors: velocity ${Math.round(velocityScore)}%, channel diversity ${Math.round(channelScore)}%, burst ratio ${Math.round(burstScore)}%, layering ${Math.round(layeringScore)}%. Account requires manual investigation by compliance team.`;
+          }
 
           alertsToInsert.push({
             account_id: account.id,
-            alert_type: isMule ? "MULE_CHAIN" : "RISK_THRESHOLD",
+            alert_type: alertType,
             severity,
-            description: reasons.join("; "),
+            description,
           });
         }
       }
