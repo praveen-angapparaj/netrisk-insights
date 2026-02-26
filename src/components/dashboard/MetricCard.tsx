@@ -12,11 +12,11 @@ interface MetricCardProps {
 }
 
 const variantStyles = {
-  default: "border-border bg-card",
-  danger: "border-critical/20 bg-critical/5 glow-danger",
-  success: "border-success/20 bg-success/5 glow-success",
-  warning: "border-warning/20 bg-warning/5",
-  info: "border-info/20 bg-info/5",
+  default: "bg-card border-border",
+  danger: "bg-card border-border",
+  success: "bg-card border-border",
+  warning: "bg-card border-border",
+  info: "bg-card border-border",
 };
 
 const iconVariants = {
@@ -41,20 +41,20 @@ const MetricCard = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={`rounded-xl border p-5 ${variantStyles[variant]}`}
+      className={`rounded-2xl border p-5 card-shadow hover:card-shadow-md transition-shadow duration-300 ${variantStyles[variant]}`}
     >
       <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           {trend && trendValue && (
-            <p className={`text-xs font-medium ${trend === "up" ? "text-critical" : "text-success"}`}>
+            <p className={`text-xs font-semibold ${trend === "up" ? "text-critical" : "text-success"}`}>
               {trend === "up" ? "↑" : "↓"} {trendValue}
             </p>
           )}
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconVariants[variant]}`}>
+        <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconVariants[variant]}`}>
           <Icon className="h-5 w-5" />
         </div>
       </div>

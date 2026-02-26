@@ -11,7 +11,16 @@ import { Users, ArrowLeftRight, AlertTriangle, ShieldAlert, Radio } from "lucide
 import { Link } from "react-router-dom";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const CHANNEL_COLORS = ["hsl(217,91%,60%)", "hsl(38,92%,50%)", "hsl(199,89%,48%)", "hsl(142,71%,45%)", "hsl(0,72%,51%)"];
+const CHANNEL_COLORS = ["hsl(217,91%,55%)", "hsl(38,92%,50%)", "hsl(205,84%,52%)", "hsl(152,69%,41%)", "hsl(0,72%,51%)"];
+
+const tooltipStyle = {
+  backgroundColor: "#fff",
+  border: "1px solid hsl(220,13%,91%)",
+  borderRadius: "12px",
+  color: "hsl(220,30%,15%)",
+  fontSize: "12px",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.06)",
+};
 
 const Index = () => {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
@@ -35,11 +44,10 @@ const Index = () => {
   return (
     <DashboardLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Fraud Monitoring Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Cross-channel mule account detection overview</p>
       </div>
 
-      {/* Impact Metrics */}
       <ImpactMetrics
         totalAccounts={stats?.totalAccounts ?? 0}
         flaggedAccounts={stats?.highRiskAccounts ?? 0}
@@ -47,7 +55,6 @@ const Index = () => {
         criticalAlerts={stats?.criticalAlerts ?? 0}
       />
 
-      {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <MetricCard title="Total Accounts" value={stats?.totalAccounts ?? "—"} icon={Users} variant="default" />
         <MetricCard title="Total Transactions" value={stats?.totalTransactions ?? "—"} icon={ArrowLeftRight} variant="default" />
@@ -58,36 +65,36 @@ const Index = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Risk Accounts Table */}
-        <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5">
+        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5 card-shadow">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-foreground">Top Risk Accounts</h2>
-            <Link to="/accounts" className="text-xs text-primary hover:underline">View all →</Link>
+            <Link to="/accounts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">View all →</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Holder</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Type</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Risk Score</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="pb-3 text-xs font-medium text-muted-foreground">Account</th>
+                  <th className="pb-3 text-xs font-medium text-muted-foreground">Holder</th>
+                  <th className="pb-3 text-xs font-medium text-muted-foreground">Type</th>
+                  <th className="pb-3 text-xs font-medium text-muted-foreground">Risk Score</th>
+                  <th className="pb-3 text-xs font-medium text-muted-foreground">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {topRiskAccounts.map((account) => (
-                  <tr key={account.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
+                  <tr key={account.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
                     <td className="py-3">
-                      <Link to={`/accounts/${account.id}`} className="font-mono text-xs text-primary hover:underline">
+                      <Link to={`/accounts/${account.id}`} className="font-mono text-xs text-primary hover:underline font-medium">
                         {account.account_number}
                       </Link>
                     </td>
-                    <td className="py-3 text-foreground">{account.account_holder_name}</td>
-                    <td className="py-3 text-muted-foreground capitalize">{account.account_type}</td>
+                    <td className="py-3 text-foreground text-sm">{account.account_holder_name}</td>
+                    <td className="py-3 text-muted-foreground capitalize text-sm">{account.account_type}</td>
                     <td className="py-3 w-40"><RiskScoreGauge score={Number(account.risk_score)} /></td>
                     <td className="py-3">
                       {account.is_flagged && (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-critical/20 bg-critical/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive">Flagged</span>
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-critical/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-critical">Flagged</span>
                       )}
                     </td>
                   </tr>
@@ -101,7 +108,7 @@ const Index = () => {
         </div>
 
         {/* Channel Distribution */}
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Channel Distribution</h2>
           {channelDistribution.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
@@ -111,20 +118,20 @@ const Index = () => {
                     <Cell key={idx} fill={CHANNEL_COLORS[idx % CHANNEL_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "hsl(222,44%,10%)", border: "1px solid hsl(222,30%,16%)", borderRadius: "8px", color: "hsl(210,40%,93%)", fontSize: "12px" }} />
+                <Tooltip contentStyle={tooltipStyle} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">No data</div>
           )}
-          <div className="mt-2 space-y-1.5">
+          <div className="mt-2 space-y-2">
             {channelDistribution.map((ch, idx) => (
               <div key={ch.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: CHANNEL_COLORS[idx % CHANNEL_COLORS.length] }} />
-                  <span className="text-muted-foreground">{ch.name}</span>
+                  <span className="text-muted-foreground capitalize">{ch.name}</span>
                 </div>
-                <span className="font-mono text-foreground">{ch.value}</span>
+                <span className="font-mono text-foreground font-medium">{ch.value}</span>
               </div>
             ))}
           </div>
@@ -132,16 +139,16 @@ const Index = () => {
       </div>
 
       {/* Recent Alerts */}
-      <div className="mt-6 rounded-xl border border-border bg-card p-5">
+      <div className="mt-6 rounded-2xl border border-border bg-card p-5 card-shadow">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-foreground">Recent Alerts</h2>
-          <Link to="/alerts" className="text-xs text-primary hover:underline">View all →</Link>
+          <Link to="/alerts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">View all →</Link>
         </div>
         <div className="space-y-3">
           {recentAlerts.map((alert) => {
             const acct = accountMap.get(alert.account_id);
             return (
-              <div key={alert.id} className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/20 px-4 py-3">
+              <div key={alert.id} className="flex items-center justify-between rounded-xl border border-border bg-secondary/30 px-4 py-3 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-4">
                   <SeverityBadge severity={alert.severity} />
                   <div>
@@ -149,7 +156,7 @@ const Index = () => {
                     <p className="text-xs text-muted-foreground">{acct?.account_number || "—"} · {new Date(alert.created_at).toLocaleString()}</p>
                   </div>
                 </div>
-                {acct && <Link to={`/accounts/${acct.id}`} className="text-xs text-primary hover:underline">Investigate</Link>}
+                {acct && <Link to={`/accounts/${acct.id}`} className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">Investigate</Link>}
               </div>
             );
           })}
