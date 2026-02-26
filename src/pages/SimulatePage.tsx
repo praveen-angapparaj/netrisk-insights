@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Zap, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { Zap, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const SimulatePage = () => {
@@ -383,9 +383,9 @@ const SimulatePage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="rounded-2xl border border-border bg-card p-6 card-shadow hover:card-shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -399,16 +399,16 @@ const SimulatePage = () => {
           <Button
             onClick={() => seedMutation.mutate()}
             disabled={seedMutation.isPending}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="w-full rounded-xl h-10"
           >
             {seedMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Seed Sample Data
           </Button>
         </div>
 
-        <div className="rounded-xl border border-critical/20 bg-critical/5 p-6">
+        <div className="rounded-2xl border border-critical/20 bg-critical/5 p-6 card-shadow hover:card-shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-critical/10">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-critical/10">
               <AlertTriangle className="h-5 w-5 text-critical" />
             </div>
             <div>
@@ -423,7 +423,7 @@ const SimulatePage = () => {
             onClick={() => burstMutation.mutate()}
             disabled={burstMutation.isPending}
             variant="destructive"
-            className="w-full"
+            className="w-full rounded-xl h-10"
           >
             {burstMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Simulate Fraud Burst
@@ -431,9 +431,8 @@ const SimulatePage = () => {
         </div>
       </div>
 
-      {/* Logs */}
       {logs.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-3">Simulation Log</h2>
           <div className="space-y-1 font-mono text-xs max-h-64 overflow-y-auto">
             {logs.map((log, i) => (

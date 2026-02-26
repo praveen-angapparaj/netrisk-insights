@@ -9,7 +9,6 @@ import { useAlerts } from "@/hooks/useAlerts";
 import { Search, Brain } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Generate deterministic banking details from account data
 const generateIFSC = (idx: number) => {
   const banks = ["SBIN", "HDFC", "ICIC", "UTIB", "KKBK", "PUNB", "BKID", "CNRB"];
   return `${banks[idx % banks.length]}0${String(1000 + (idx * 7) % 9000).padStart(6, "0")}`;
@@ -18,7 +17,6 @@ const generatePAN = (name: string) => {
   const first = name.slice(0, 5).toUpperCase().replace(/[^A-Z]/g, "X").padEnd(5, "X");
   return `${first}****${String.fromCharCode(65 + (name.length % 26))}`;
 };
-const kycRatings = ["LOW", "MEDIUM", "HIGH", "VERIFIED"];
 const generateKYC = (riskScore: number) => {
   if (riskScore > 70) return "HIGH";
   if (riskScore > 40) return "MEDIUM";
@@ -55,35 +53,35 @@ const AccountsPage = () => {
         </div>
         <div className="relative w-72">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary border-border" />
+          <Input placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-secondary/50 border-0 rounded-xl" />
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden card-shadow">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account #</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Holder Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">IFSC</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">PAN</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">KYC Risk</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inward</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Outward</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground w-36">Risk Score</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">AI</th>
+              <tr className="border-b border-border bg-secondary/50">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Account #</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Holder Name</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">IFSC</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">PAN</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">KYC Risk</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Inward</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Outward</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground w-36">Risk Score</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">AI</th>
               </tr>
             </thead>
             <tbody>
               {filtered?.map((account, idx) => {
                 const kycRisk = generateKYC(Number(account.risk_score));
                 return (
-                  <tr key={account.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                  <tr key={account.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
                     <td className="px-4 py-3">
-                      <Link to={`/accounts/${account.id}`} className="font-mono text-xs text-primary hover:underline">
+                      <Link to={`/accounts/${account.id}`} className="font-mono text-xs text-primary hover:underline font-medium">
                         {account.account_number}
                       </Link>
                     </td>
@@ -91,29 +89,29 @@ const AccountsPage = () => {
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{generateIFSC(idx)}</td>
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{generatePAN(account.account_holder_name)}</td>
                     <td className="px-4 py-3">
-                      <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
                         kycRisk === "HIGH" ? "bg-critical/10 text-critical" : kycRisk === "MEDIUM" ? "bg-warning/10 text-warning" : "bg-success/10 text-success"
                       }`}>
                         {kycRisk}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground capitalize">{account.account_type}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-success">₹{Number(account.total_inward_amount).toLocaleString()}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-critical">₹{Number(account.total_outward_amount).toLocaleString()}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-success font-medium">₹{Number(account.total_inward_amount).toLocaleString()}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-critical font-medium">₹{Number(account.total_outward_amount).toLocaleString()}</td>
                     <td className="px-4 py-3"><RiskScoreGauge score={Number(account.risk_score)} /></td>
                     <td className="px-4 py-3">
                       {account.is_flagged ? (
-                        <span className="inline-flex items-center rounded-md border border-critical/20 bg-critical/10 px-2 py-0.5 text-[10px] font-bold uppercase text-critical">Flagged</span>
+                        <span className="inline-flex items-center rounded-lg bg-critical/10 px-2 py-0.5 text-[10px] font-bold uppercase text-critical">Flagged</span>
                       ) : account.dormant_flag ? (
-                        <span className="inline-flex items-center rounded-md border border-warning/20 bg-warning/10 px-2 py-0.5 text-[10px] font-bold uppercase text-warning">Dormant</span>
+                        <span className="inline-flex items-center rounded-lg bg-warning/10 px-2 py-0.5 text-[10px] font-bold uppercase text-warning">Dormant</span>
                       ) : (
-                        <span className="inline-flex items-center rounded-md border border-success/20 bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">Normal</span>
+                        <span className="inline-flex items-center rounded-lg bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">Normal</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => { setDrawerAccountId(account.id); setDrawerOpen(true); }}
-                        className="rounded-md border border-primary/30 bg-primary/10 p-1.5 text-primary hover:bg-primary/20 transition-colors"
+                        className="rounded-lg bg-primary/10 p-1.5 text-primary hover:bg-primary/20 transition-colors"
                         title="AI Risk Analysis"
                       >
                         <Brain className="h-3.5 w-3.5" />

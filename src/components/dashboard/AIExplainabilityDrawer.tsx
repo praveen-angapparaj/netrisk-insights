@@ -152,7 +152,7 @@ const AIExplainabilityDrawer = ({
         </SheetHeader>
 
         {/* Account Info */}
-        <div className="mt-5 rounded-lg border border-border bg-secondary/30 p-4">
+        <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
           <p className="text-sm font-semibold text-foreground">{account.account_holder_name}</p>
           <p className="text-xs font-mono text-muted-foreground">{account.account_number}</p>
           <div className="mt-3 flex items-center gap-4">
@@ -225,7 +225,7 @@ const AIExplainabilityDrawer = ({
           </div>
           <div className="rounded-lg border border-border bg-secondary/20 p-3 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Model Version</p>
-            <p className="mt-1 text-sm font-bold text-primary">SentinelIQ AI v2.1</p>
+            <p className="mt-1 text-sm font-bold text-primary">NetRisk AI v2.1</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">GNN + Temporal</p>
           </div>
         </div>

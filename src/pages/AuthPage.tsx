@@ -25,7 +25,7 @@ const AuthPage = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      toast.success("Welcome back, Officer");
+      toast.success("Welcome back");
       navigate("/");
     } catch (error: any) {
       toast.error(error.message || "Login failed");
@@ -38,7 +38,6 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Verify access code first
       const { data: codeResult, error: codeError } = await supabase.functions.invoke("verify-access-code", {
         body: { code: accessCode },
       });
@@ -66,22 +65,22 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
-            <Shield className="h-7 w-7 text-primary" />
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground card-shadow-lg">
+            <Shield className="h-8 w-8" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">SentinelIQ</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk</h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-1">
-              Graph Intelligence Platform
+              Mule Detection AI Platform
             </p>
           </div>
         </div>
 
-        <Card className="border-border/50 shadow-lg">
+        <Card className="border-border card-shadow-lg rounded-2xl">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg">{isLogin ? "Officer Login" : "Request Access"}</CardTitle>
+            <CardTitle className="text-lg">{isLogin ? "Welcome back" : "Request Access"}</CardTitle>
             <CardDescription>
               {isLogin
                 ? "Enter your credentials to access the platform"
@@ -99,6 +98,7 @@ const AuthPage = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
+                    className="rounded-xl"
                   />
                 </div>
               )}
@@ -112,6 +112,7 @@ const AuthPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="rounded-xl"
                 />
               </div>
 
@@ -126,11 +127,12 @@ const AuthPage = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
+                    className="rounded-xl"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -147,6 +149,7 @@ const AuthPage = () => {
                     value={accessCode}
                     onChange={(e) => setAccessCode(e.target.value)}
                     required
+                    className="rounded-xl"
                   />
                   <p className="text-xs text-muted-foreground">
                     Provided by your department administrator
@@ -154,8 +157,8 @@ const AuthPage = () => {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full rounded-xl h-11" disabled={loading}>
+                {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {isLogin ? "Sign In" : "Request Access"}
               </Button>
             </form>

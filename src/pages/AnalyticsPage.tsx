@@ -5,12 +5,15 @@ import { useAlerts } from "@/hooks/useAlerts";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid, AreaChart, Area } from "recharts";
 
 const tooltipStyle = {
-  backgroundColor: "hsl(222,44%,10%)",
-  border: "1px solid hsl(222,30%,16%)",
-  borderRadius: "8px",
-  color: "hsl(210,40%,93%)",
+  backgroundColor: "#fff",
+  border: "1px solid hsl(220,13%,91%)",
+  borderRadius: "12px",
+  color: "hsl(220,30%,15%)",
   fontSize: "12px",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.06)",
 };
+
+const axisTickStyle = { fill: "hsl(220,10%,50%)", fontSize: 11 };
 
 const AnalyticsPage = () => {
   const { data: accounts } = useAccounts();
@@ -19,8 +22,8 @@ const AnalyticsPage = () => {
 
   // Risk distribution
   const riskBuckets = [
-    { range: "0-20", count: 0, color: "hsl(142,71%,45%)" },
-    { range: "21-40", count: 0, color: "hsl(142,71%,45%)" },
+    { range: "0-20", count: 0, color: "hsl(152,69%,41%)" },
+    { range: "21-40", count: 0, color: "hsl(152,69%,41%)" },
     { range: "41-60", count: 0, color: "hsl(38,92%,50%)" },
     { range: "61-80", count: 0, color: "hsl(25,95%,53%)" },
     { range: "81-100", count: 0, color: "hsl(0,72%,51%)" },
@@ -34,7 +37,7 @@ const AnalyticsPage = () => {
     else riskBuckets[4].count++;
   });
 
-  // Fraud trend over time (alerts by hour)
+  // Fraud trend
   const alertsByHour: Record<string, number> = {};
   alerts?.forEach((a) => {
     const hour = new Date(a.created_at).toISOString().slice(0, 13);
@@ -56,9 +59,8 @@ const AnalyticsPage = () => {
     .slice(-24)
     .map(([hour, count]) => ({ hour: hour.slice(11) + ":00", count }));
 
-  // Cross-channel correlation matrix
+  // Cross-channel correlation
   const channelPairs: Record<string, number> = {};
-  const channels = ["UPI", "ATM", "NET_BANKING", "MOBILE_BANKING", "BRANCH"];
   if (transactions) {
     const accountChannels: Record<string, Set<string>> = {};
     transactions.forEach((tx) => {
@@ -80,7 +82,7 @@ const AnalyticsPage = () => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
-  // Device sharing cluster sizes
+  // Device sharing clusters
   const deviceAccounts: Record<string, Set<string>> = {};
   transactions?.forEach((tx) => {
     if (tx.device_id) {
@@ -118,60 +120,58 @@ const AnalyticsPage = () => {
         <p className="text-sm text-muted-foreground">Data-science grade fraud pattern analysis</p>
       </div>
 
-      {/* Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Risk Score Distribution</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={riskBuckets}>
-              <XAxis dataKey="range" tick={{ fill: "hsl(215,20%,55%)", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "hsl(215,20%,55%)", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="range" tick={axisTickStyle} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                 {riskBuckets.map((b, i) => <Cell key={i} fill={b.color} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold text-foreground mb-4">🔥 Fraud Trend Over Time</h2>
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Fraud Trend Over Time</h2>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={fraudTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,30%,16%)" />
-              <XAxis dataKey="hour" tick={{ fill: "hsl(215,20%,55%)", fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "hsl(215,20%,55%)", fontSize: 10 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+              <XAxis dataKey="hour" tick={axisTickStyle} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="alerts" stroke="hsl(0,72%,51%)" fill="hsl(0,72%,51%)" fillOpacity={0.2} strokeWidth={2} />
+              <Area type="monotone" dataKey="alerts" stroke="hsl(0,72%,51%)" fill="hsl(0,72%,51%)" fillOpacity={0.1} strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Transaction Volume (Last 24h)</h2>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={volumeData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,30%,16%)" />
-              <XAxis dataKey="hour" tick={{ fill: "hsl(215,20%,55%)", fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "hsl(215,20%,55%)", fontSize: 10 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+              <XAxis dataKey="hour" tick={axisTickStyle} axisLine={false} tickLine={false} />
+              <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="count" stroke="hsl(217,91%,60%)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="count" stroke="hsl(217,91%,55%)" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Cross-Channel Correlation</h2>
           {correlationData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={correlationData} layout="vertical">
-                <XAxis type="number" tick={{ fill: "hsl(215,20%,55%)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="pair" tick={{ fill: "hsl(215,20%,55%)", fontSize: 9 }} axisLine={false} tickLine={false} width={100} />
+                <XAxis type="number" tick={axisTickStyle} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="pair" tick={{ ...axisTickStyle, fontSize: 9 }} axisLine={false} tickLine={false} width={100} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="count" fill="hsl(199,89%,48%)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="count" fill="hsl(205,84%,52%)" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -180,45 +180,38 @@ const AnalyticsPage = () => {
         </div>
       </div>
 
-      {/* Row 3 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Fraud Propagation</h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Flagged Accounts</span>
-              <span className="text-lg font-bold text-critical font-mono">{flaggedCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Dormant Reactivated</span>
-              <span className="text-lg font-bold text-warning font-mono">{dormantCount}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Total Accounts</span>
-              <span className="text-lg font-bold text-foreground font-mono">{accounts?.length || 0}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Flag Rate</span>
-              <span className="text-lg font-bold text-primary font-mono">{accounts?.length ? ((flaggedCount / accounts.length) * 100).toFixed(1) : 0}%</span>
-            </div>
+            {[
+              { label: "Flagged Accounts", value: flaggedCount, color: "text-critical" },
+              { label: "Dormant Reactivated", value: dormantCount, color: "text-warning" },
+              { label: "Total Accounts", value: accounts?.length || 0, color: "text-foreground" },
+              { label: "Flag Rate", value: `${accounts?.length ? ((flaggedCount / accounts.length) * 100).toFixed(1) : 0}%`, color: "text-primary" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{item.label}</span>
+                <span className={`text-lg font-bold font-mono ${item.color}`}>{item.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Device Sharing Clusters */}
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Device-Sharing Clusters</h2>
           {clusterSizes.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {clusterSizes.map((c) => {
                 const maxAccounts = clusterSizes[0].accounts;
                 const pct = (c.accounts / maxAccounts) * 100;
                 return (
                   <div key={c.device} className="flex items-center gap-3">
                     <span className="w-20 text-xs text-muted-foreground font-mono truncate">{c.device}</span>
-                    <div className="flex-1 h-4 rounded bg-secondary relative overflow-hidden">
-                      <div className="h-full rounded bg-warning transition-all" style={{ width: `${pct}%` }} />
+                    <div className="flex-1 h-3 rounded-full bg-secondary relative overflow-hidden">
+                      <div className="h-full rounded-full bg-warning transition-all" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="font-mono text-xs text-foreground w-6 text-right">{c.accounts}</span>
+                    <span className="font-mono text-xs text-foreground w-6 text-right font-medium">{c.accounts}</span>
                   </div>
                 );
               })}
@@ -228,21 +221,20 @@ const AnalyticsPage = () => {
           )}
         </div>
 
-        {/* Geo Distribution */}
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5 card-shadow">
           <h2 className="text-sm font-semibold text-foreground mb-4">Geo-Risk Distribution</h2>
           {geoData.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {geoData.map((g, idx) => {
                 const maxCount = geoData[0].count;
                 const pct = (g.count / maxCount) * 100;
                 return (
                   <div key={g.city} className="flex items-center gap-3">
                     <span className="w-20 text-xs text-muted-foreground truncate">{g.city}</span>
-                    <div className="flex-1 h-4 rounded bg-secondary relative overflow-hidden">
-                      <div className="h-full rounded transition-all" style={{ width: `${pct}%`, background: `hsl(${Math.max(0, 217 - idx * 20)},${Math.max(50, 91 - idx * 5)}%,60%)` }} />
+                    <div className="flex-1 h-3 rounded-full bg-secondary relative overflow-hidden">
+                      <div className="h-full rounded-full transition-all bg-primary" style={{ width: `${pct}%`, opacity: 1 - idx * 0.08 }} />
                     </div>
-                    <span className="font-mono text-xs text-foreground w-8 text-right">{g.count}</span>
+                    <span className="font-mono text-xs text-foreground w-8 text-right font-medium">{g.count}</span>
                   </div>
                 );
               })}

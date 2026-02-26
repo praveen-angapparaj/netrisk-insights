@@ -14,7 +14,7 @@ const NODE_COLORS = {
   normal: "#3B82F6",
   flagged: "#EF4444",
   muleSuspect: "#F97316",
-  center: "#8B5CF6",
+  center: "#7C3AED",
   merchant: "#22C55E",
   dormant: "#EAB308",
 };
@@ -37,7 +37,7 @@ const GraphPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerAccountId, setDrawerAccountId] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState([0]); // 0 = all, 1-24 = hours ago
+  const [timeRange, setTimeRange] = useState([0]);
 
   const defaultAccountId = useMemo(() => {
     if (!accounts || accounts.length === 0) return null;
@@ -48,7 +48,6 @@ const GraphPage = () => {
 
   const activeAccountId = selectedAccountId ?? defaultAccountId;
 
-  // Filter transactions by time range
   const timeFilteredTransactions = useMemo(() => {
     if (!transactions) return [];
     if (timeRange[0] === 0) return transactions;
@@ -63,40 +62,24 @@ const GraphPage = () => {
     );
     const ids = new Set<string>();
     ids.add(activeAccountId);
-    relevant.forEach((tx) => {
-      ids.add(tx.from_account);
-      ids.add(tx.to_account);
-    });
+    relevant.forEach((tx) => { ids.add(tx.from_account); ids.add(tx.to_account); });
     return { involvedAccountIds: ids, relevantTransactions: relevant };
   }, [activeAccountId, timeFilteredTransactions]);
 
-  // Detect patterns
   const detectedPatterns = useMemo(() => {
     const patterns: string[] = [];
     if (!accounts || !relevantTransactions || relevantTransactions.length === 0) return patterns;
-
     const activeAcct = accounts.find((a) => a.id === activeAccountId);
     if (!activeAcct) return patterns;
-
-    // Mule chain: multiple hops
     const outTargets = new Set(relevantTransactions.filter((tx) => tx.from_account === activeAccountId).map((tx) => tx.to_account));
     const inSources = new Set(relevantTransactions.filter((tx) => tx.to_account === activeAccountId).map((tx) => tx.from_account));
     if (outTargets.size >= 2 && inSources.size >= 1) patterns.push("Mule Chain Detected");
-
-    // Circular: A sends to B and B sends back
     const circular = [...outTargets].some((t) => inSources.has(t));
     if (circular) patterns.push("Circular Laundering Loop");
-
-    // Velocity: many transactions in short window
     if (relevantTransactions.length >= 8) patterns.push("Velocity Cluster");
-
-    // Shared device
     const devices = new Set(relevantTransactions.map((tx) => tx.device_id).filter(Boolean));
     if (devices.size <= 2 && relevantTransactions.length >= 5) patterns.push("Shared KYC Cluster");
-
-    // Dormant
     if (activeAcct.dormant_flag) patterns.push("Dormant Reactivation");
-
     return patterns;
   }, [accounts, relevantTransactions, activeAccountId]);
 
@@ -109,7 +92,6 @@ const GraphPage = () => {
     );
   }, [accounts, searchTerm]);
 
-  // Per-account stats for drawer
   const drawerAccount = accounts?.find((a) => a.id === drawerAccountId) || null;
   const drawerTxCount = useMemo(() => {
     if (!drawerAccountId || !transactions) return 0;
@@ -117,10 +99,7 @@ const GraphPage = () => {
   }, [drawerAccountId, transactions]);
   const drawerChannelCount = useMemo(() => {
     if (!drawerAccountId || !transactions) return 0;
-    const chs = new Set(
-      transactions.filter((tx) => tx.from_account === drawerAccountId || tx.to_account === drawerAccountId).map((tx) => tx.channel)
-    );
-    return chs.size;
+    return new Set(transactions.filter((tx) => tx.from_account === drawerAccountId || tx.to_account === drawerAccountId).map((tx) => tx.channel)).size;
   }, [drawerAccountId, transactions]);
   const drawerAlertCount = useMemo(() => {
     if (!drawerAccountId || !allAlerts) return 0;
@@ -164,19 +143,13 @@ const GraphPage = () => {
     relevantTransactions.forEach((tx) => {
       const key = `${tx.from_account}::${tx.to_account}`;
       const existing = edgeMap.get(key);
-      if (existing) {
-        existing.amount += Number(tx.amount);
-        existing.count += 1;
-      } else {
-        edgeMap.set(key, { channel: tx.channel, amount: Number(tx.amount), count: 1 });
-      }
+      if (existing) { existing.amount += Number(tx.amount); existing.count += 1; }
+      else { edgeMap.set(key, { channel: tx.channel, amount: Number(tx.amount), count: 1 }); }
     });
 
     edgeMap.forEach((val, key) => {
       const [source, target] = key.split("::");
-      elements.push({
-        data: { id: `e-${key}`, source, target, channel: val.channel, amount: val.amount, count: val.count },
-      });
+      elements.push({ data: { id: `e-${key}`, source, target, channel: val.channel, amount: val.amount, count: val.count } });
     });
 
     cyRef.current = cytoscape({
@@ -186,52 +159,19 @@ const GraphPage = () => {
         {
           selector: "node",
           style: {
-            label: "data(label)",
-            "background-color": NODE_COLORS.normal,
-            color: "#E2E8F0",
-            "font-size": "9px",
-            "text-valign": "bottom",
-            "text-margin-y": 8,
-            "text-wrap": "wrap",
-            "text-max-width": "80px",
-            width: 30,
-            height: 30,
-            "border-width": 2,
-            "border-color": "#1E3A5F",
-            "font-family": "JetBrains Mono, monospace",
+            label: "data(label)", "background-color": NODE_COLORS.normal, color: "#475569",
+            "font-size": "9px", "text-valign": "bottom", "text-margin-y": 8, "text-wrap": "wrap", "text-max-width": "80px",
+            width: 30, height: 30, "border-width": 2, "border-color": "#CBD5E1", "font-family": "JetBrains Mono, monospace",
           },
         },
-        {
-          selector: "node[nodeType='center']",
-          style: { "background-color": NODE_COLORS.center, "border-color": "#6D28D9", width: 50, height: 50, "border-width": 4, "font-size": "11px" },
-        },
-        {
-          selector: "node[nodeType='flagged']",
-          style: { "background-color": NODE_COLORS.flagged, "border-color": "#991B1B", width: 40, height: 40, "border-width": 3 },
-        },
-        {
-          selector: "node[nodeType='muleSuspect']",
-          style: { "background-color": NODE_COLORS.muleSuspect, "border-color": "#C2410C", width: 38, height: 38, "border-width": 3 },
-        },
-        {
-          selector: "node[nodeType='merchant']",
-          style: { "background-color": NODE_COLORS.merchant, "border-color": "#15803D", width: 32, height: 32 },
-        },
-        {
-          selector: "node[nodeType='dormant']",
-          style: { "background-color": NODE_COLORS.dormant, "border-color": "#A16207", width: 32, height: 32 },
-        },
+        { selector: "node[nodeType='center']", style: { "background-color": NODE_COLORS.center, "border-color": "#6D28D9", width: 50, height: 50, "border-width": 4, "font-size": "11px" } },
+        { selector: "node[nodeType='flagged']", style: { "background-color": NODE_COLORS.flagged, "border-color": "#FCA5A5", width: 40, height: 40, "border-width": 3 } },
+        { selector: "node[nodeType='muleSuspect']", style: { "background-color": NODE_COLORS.muleSuspect, "border-color": "#FDBA74", width: 38, height: 38, "border-width": 3 } },
+        { selector: "node[nodeType='merchant']", style: { "background-color": NODE_COLORS.merchant, "border-color": "#86EFAC", width: 32, height: 32 } },
+        { selector: "node[nodeType='dormant']", style: { "background-color": NODE_COLORS.dormant, "border-color": "#FDE047", width: 32, height: 32 } },
         {
           selector: "edge",
-          style: {
-            width: 1.5,
-            "line-color": "#334155",
-            "target-arrow-color": "#334155",
-            "target-arrow-shape": "triangle",
-            "curve-style": "bezier",
-            "arrow-scale": 0.8,
-            opacity: 0.6,
-          },
+          style: { width: 1.5, "line-color": "#CBD5E1", "target-arrow-color": "#CBD5E1", "target-arrow-shape": "triangle", "curve-style": "bezier", "arrow-scale": 0.8, opacity: 0.6 },
         },
         { selector: "edge[channel='UPI']", style: { "line-color": "#3B82F6", "target-arrow-color": "#3B82F6" } },
         { selector: "edge[channel='ATM']", style: { "line-color": "#F59E0B", "target-arrow-color": "#F59E0B" } },
@@ -241,32 +181,22 @@ const GraphPage = () => {
       layout: {
         name: "concentric",
         concentric: (node: any) => (node.data("isCenter") ? 10 : 1),
-        levelWidth: () => 1,
-        padding: 50,
-        animate: true,
-        animationDuration: 600,
+        levelWidth: () => 1, padding: 50, animate: true, animationDuration: 600,
       },
-      minZoom: 0.3,
-      maxZoom: 3,
+      minZoom: 0.3, maxZoom: 3,
     });
 
     cyRef.current.on("tap", "node", (e) => {
       const nodeId = e.target.id();
       if (nodeId !== activeAccountId) setSelectedAccountId(nodeId);
     });
-
-    // Double-click to open AI drawer
     cyRef.current.on("dbltap", "node", (e) => {
-      const nodeId = e.target.id();
-      setDrawerAccountId(nodeId);
-      setDrawerOpen(true);
+      setDrawerAccountId(e.target.id()); setDrawerOpen(true);
     });
-
     cyRef.current.on("mouseover", "node", (e) => e.target.style("border-width", 5));
     cyRef.current.on("mouseout", "node", (e) => {
-      const node = e.target;
-      const type = node.data("nodeType");
-      node.style("border-width", type === "center" ? 4 : type === "flagged" || type === "muleSuspect" ? 3 : 2);
+      const type = e.target.data("nodeType");
+      e.target.style("border-width", type === "center" ? 4 : type === "flagged" || type === "muleSuspect" ? 3 : 2);
     });
   }, [accounts, transactions, activeAccountId, involvedAccountIds, relevantTransactions, getNodeType]);
 
@@ -281,26 +211,25 @@ const GraphPage = () => {
     <DashboardLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Transaction Network Graph</h1>
-        <p className="text-sm text-muted-foreground">Select an account to view its transaction network · Double-click a node for AI analysis</p>
+        <p className="text-sm text-muted-foreground">Select an account to view its transaction network · Double-click for AI analysis</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Sidebar */}
-        <div className="lg:col-span-1 rounded-xl border border-border bg-card p-4 max-h-[700px] flex flex-col">
+        <div className="lg:col-span-1 rounded-2xl border border-border bg-card p-4 max-h-[700px] flex flex-col card-shadow">
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search accounts..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-sm" />
+            <Input placeholder="Search accounts..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9 text-sm rounded-xl bg-secondary/50 border-0" />
           </div>
 
-          {/* Node legend */}
-          <div className="mb-3 rounded-lg border border-border bg-secondary/20 p-2.5 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Node Types</p>
+          <div className="mb-3 rounded-xl border border-border bg-secondary/30 p-2.5 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Node Types</p>
             {[
               { color: NODE_COLORS.normal, label: "Normal Account" },
               { color: NODE_COLORS.flagged, label: "Flagged" },
               { color: NODE_COLORS.muleSuspect, label: "Mule Suspect" },
               { color: NODE_COLORS.center, label: "Selected" },
-              { color: NODE_COLORS.merchant, label: "Merchant (Current)" },
+              { color: NODE_COLORS.merchant, label: "Merchant" },
               { color: NODE_COLORS.dormant, label: "Dormant" },
             ].map((n) => (
               <div key={n.label} className="flex items-center gap-2">
@@ -315,8 +244,8 @@ const GraphPage = () => {
               <button
                 key={account.id}
                 onClick={() => setSelectedAccountId(account.id)}
-                className={`w-full text-left rounded-lg px-3 py-2 text-sm transition-colors ${
-                  account.id === activeAccountId ? "bg-primary/20 border border-primary/40" : "hover:bg-secondary/40 border border-transparent"
+                className={`w-full text-left rounded-xl px-3 py-2 text-sm transition-all ${
+                  account.id === activeAccountId ? "bg-primary/10 border border-primary/30" : "hover:bg-secondary/50 border border-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -325,7 +254,7 @@ const GraphPage = () => {
                     {account.is_flagged && <span className="h-2 w-2 rounded-full bg-critical flex-shrink-0" />}
                     <button
                       onClick={(e) => { e.stopPropagation(); setDrawerAccountId(account.id); setDrawerOpen(true); }}
-                      className="p-0.5 rounded hover:bg-primary/20 transition-colors"
+                      className="p-0.5 rounded-md hover:bg-primary/10 transition-colors"
                     >
                       <Brain className="h-3 w-3 text-primary" />
                     </button>
@@ -338,7 +267,7 @@ const GraphPage = () => {
         </div>
 
         {/* Graph */}
-        <div className="lg:col-span-3 rounded-xl border border-border bg-card overflow-hidden">
+        <div className="lg:col-span-3 rounded-2xl border border-border bg-card overflow-hidden card-shadow">
           {activeAccount && (
             <div className="border-b border-border px-5 py-3">
               <div className="flex items-center justify-between mb-2">
@@ -347,7 +276,7 @@ const GraphPage = () => {
                     <span className="text-sm font-semibold text-foreground">{activeAccount.account_holder_name}</span>
                     <span className="ml-2 text-xs text-muted-foreground font-mono">{activeAccount.account_number.slice(-6)}</span>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${Number(activeAccount.risk_score) >= 70 ? "bg-critical/20 text-critical" : "bg-success/20 text-success"}`}>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${Number(activeAccount.risk_score) >= 70 ? "bg-critical/10 text-critical" : "bg-success/10 text-success"}`}>
                     Risk: {Number(activeAccount.risk_score).toFixed(0)}
                   </span>
                   {activeAccount.is_flagged && <span className="text-xs font-bold text-critical">⚠ FLAGGED</span>}
@@ -356,13 +285,11 @@ const GraphPage = () => {
                   {Object.entries(CHANNEL_EDGE_COLORS).map(([ch, color]) => (
                     <div key={ch} className="flex items-center gap-1.5">
                       <div className="h-0.5 w-4 rounded" style={{ backgroundColor: color }} />
-                      <span className="text-xs text-muted-foreground">{ch.replace("_", " ")}</span>
+                      <span className="text-[10px] text-muted-foreground">{ch.replace("_", " ")}</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Pattern badges */}
               {detectedPatterns.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
                   {detectedPatterns.map((p) => <PatternBadge key={p} pattern={p} />)}
@@ -371,23 +298,15 @@ const GraphPage = () => {
             </div>
           )}
 
-          {/* Time slider */}
           <div className="border-b border-border px-5 py-2 flex items-center gap-4">
-            <span className="text-xs text-muted-foreground font-semibold whitespace-nowrap">⏱ Time Window:</span>
-            <Slider
-              value={timeRange}
-              onValueChange={setTimeRange}
-              min={0}
-              max={168}
-              step={1}
-              className="flex-1 max-w-xs"
-            />
+            <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">Time Window:</span>
+            <Slider value={timeRange} onValueChange={setTimeRange} min={0} max={168} step={1} className="flex-1 max-w-xs" />
             <span className="text-xs font-mono text-foreground w-28">
               {timeRange[0] === 0 ? "All time" : `Last ${timeRange[0]}h`}
             </span>
           </div>
 
-          <div ref={containerRef} className="h-[560px] w-full" style={{ background: "hsl(222,47%,5%)" }} />
+          <div ref={containerRef} className="h-[560px] w-full" style={{ background: "#F8FAFC" }} />
         </div>
       </div>
 

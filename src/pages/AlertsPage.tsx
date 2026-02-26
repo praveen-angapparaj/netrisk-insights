@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const INVESTIGATORS = ["Unassigned", "Agt. R. Sharma", "Agt. P. Verma", "Agt. S. Nair", "Agt. K. Singh"];
 
 const generateCaseId = (alertId: string, idx: number) => {
-  const hash = alertId.slice(0, 4).toUpperCase();
   return `FR-${new Date().getFullYear()}-${String(idx + 1).padStart(4, "0")}`;
 };
 
@@ -44,7 +43,7 @@ const AlertsPage = () => {
         </div>
         <div className="flex items-center gap-3">
           <Select value={filterSeverity} onValueChange={setFilterSeverity}>
-            <SelectTrigger className="w-36 h-9 text-xs">
+            <SelectTrigger className="w-36 h-9 text-xs rounded-xl">
               <SelectValue placeholder="Filter severity" />
             </SelectTrigger>
             <SelectContent>
@@ -55,26 +54,26 @@ const AlertsPage = () => {
               <SelectItem value="LOW">Low</SelectItem>
             </SelectContent>
           </Select>
-          <div className="rounded-lg border border-border bg-card px-3 py-1.5">
+          <div className="rounded-xl border border-border bg-card px-3 py-1.5 card-shadow">
             <span className="text-xs text-muted-foreground">Open Cases: </span>
             <span className="text-xs font-bold font-mono text-foreground">{filteredAlerts.length}</span>
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden card-shadow">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-secondary/30">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Case ID</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Severity</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Priority</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Type</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground max-w-[240px]">Description</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">SLA Timer</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investigator</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Action</th>
+            <tr className="border-b border-border bg-secondary/50">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Case ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Severity</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Priority</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Account</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Type</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground max-w-[240px]">Description</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">SLA Timer</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Investigator</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +82,7 @@ const AlertsPage = () => {
               const priority = getPriorityScore(alert.severity, alert.created_at);
               const caseId = generateCaseId(alert.id, idx);
               return (
-                <tr key={alert.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                <tr key={alert.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-primary font-bold">{caseId}</td>
                   <td className="px-4 py-3"><SeverityBadge severity={alert.severity} /></td>
                   <td className="px-4 py-3">
@@ -110,7 +109,7 @@ const AlertsPage = () => {
                       value={assignments[alert.id] || "Unassigned"}
                       onValueChange={(val) => setAssignments((prev) => ({ ...prev, [alert.id]: val }))}
                     >
-                      <SelectTrigger className="h-7 w-32 text-[11px] border-border/50">
+                      <SelectTrigger className="h-7 w-32 text-[11px] border-border/50 rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -124,7 +123,7 @@ const AlertsPage = () => {
                     {acct && (
                       <Link
                         to={`/accounts/${acct.id}`}
-                        className="rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                        className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
                       >
                         Investigate
                       </Link>
