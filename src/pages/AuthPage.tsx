@@ -38,11 +38,22 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data: codeResult, error: codeError } = await supabase.functions.invoke("verify-access-code", {
-        body: { code: accessCode },
-      });
+      // Try edge function first, fall back to local env var for self-hosted setups
+      let codeValid = false;
+      const localCode = import.meta.env.VITE_NETRISK_ACCESS_CODE;
+      
+      if (localCode) {
+        // Self-hosted: verify against local environment variable
+        codeValid = accessCode === localCode;
+      } else {
+        // Cloud: verify via edge function
+        const { data: codeResult, error: codeError } = await supabase.functions.invoke("verify-access-code", {
+          body: { code: accessCode },
+        });
+        codeValid = !codeError && codeResult?.valid;
+      }
 
-      if (codeError || !codeResult?.valid) {
+      if (!codeValid) {
         throw new Error("Invalid access code. Contact your administrator.");
       }
 
