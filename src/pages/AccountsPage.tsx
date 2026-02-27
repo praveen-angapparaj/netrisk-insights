@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import RiskScoreGauge from "@/components/dashboard/RiskScoreGauge";
+import StatusBadge from "@/components/dashboard/StatusBadge";
 import AIExplainabilityDrawer from "@/components/dashboard/AIExplainabilityDrawer";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useAllTransactions } from "@/hooks/useTransactions";
@@ -99,15 +100,7 @@ const AccountsPage = () => {
                     <td className="px-4 py-3 font-mono text-xs text-success font-medium">₹{Number(account.total_inward_amount).toLocaleString()}</td>
                     <td className="px-4 py-3 font-mono text-xs text-critical font-medium">₹{Number(account.total_outward_amount).toLocaleString()}</td>
                     <td className="px-4 py-3"><RiskScoreGauge score={Number(account.risk_score)} /></td>
-                    <td className="px-4 py-3">
-                      {account.is_flagged ? (
-                        <span className="inline-flex items-center rounded-lg bg-critical/10 px-2 py-0.5 text-[10px] font-bold uppercase text-critical">Flagged</span>
-                      ) : account.dormant_flag ? (
-                        <span className="inline-flex items-center rounded-lg bg-warning/10 px-2 py-0.5 text-[10px] font-bold uppercase text-warning">Dormant</span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-lg bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase text-success">Normal</span>
-                      )}
-                    </td>
+                    <td className="px-4 py-3"><StatusBadge status={(account as any).status || "active"} /></td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => { setDrawerAccountId(account.id); setDrawerOpen(true); }}

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_actions: {
+        Row: {
+          account_id: string
+          action_type: string
+          admin_id: string
+          created_at: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          account_id: string
+          action_type: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          account_id?: string
+          action_type?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_actions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounts: {
         Row: {
           account_holder_name: string
@@ -25,6 +60,7 @@ export type Database = {
           is_flagged: boolean
           last_active_at: string | null
           risk_score: number
+          status: string
           total_inward_amount: number
           total_outward_amount: number
         }
@@ -38,6 +74,7 @@ export type Database = {
           is_flagged?: boolean
           last_active_at?: string | null
           risk_score?: number
+          status?: string
           total_inward_amount?: number
           total_outward_amount?: number
         }
@@ -51,6 +88,7 @@ export type Database = {
           is_flagged?: boolean
           last_active_at?: string | null
           risk_score?: number
+          status?: string
           total_inward_amount?: number
           total_outward_amount?: number
         }
@@ -162,6 +200,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

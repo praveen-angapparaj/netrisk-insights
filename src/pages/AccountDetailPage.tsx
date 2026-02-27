@@ -4,11 +4,15 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import RiskScoreGauge from "@/components/dashboard/RiskScoreGauge";
 import SeverityBadge from "@/components/dashboard/SeverityBadge";
 import ChannelBadge from "@/components/dashboard/ChannelBadge";
+import StatusBadge from "@/components/dashboard/StatusBadge";
 import AIExplainabilityDrawer from "@/components/dashboard/AIExplainabilityDrawer";
+import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 import { useAccount } from "@/hooks/useAccounts";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAlerts } from "@/hooks/useAlerts";
-import { ArrowLeft, TrendingUp, TrendingDown, Brain, Fingerprint, Globe, CreditCard } from "lucide-react";
+import { useBlockAccount, useLaunchInvestigation } from "@/hooks/useAccountActions";
+import { formatRiskType } from "@/lib/formatRiskType";
+import { ArrowLeft, TrendingUp, TrendingDown, Brain, Fingerprint, Globe, CreditCard, Ban, Search } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const CHANNEL_COLORS: Record<string, string> = {
@@ -19,25 +23,15 @@ const CHANNEL_COLORS: Record<string, string> = {
   BRANCH: "hsl(220,10%,50%)",
 };
 
-const CHANNEL_WEIGHTS: Record<string, number> = {
-  UPI: 0.4, ATM: 0.2, NET_BANKING: 0.15, MOBILE_BANKING: 0.15, BRANCH: 0.1,
-};
-
-const tooltipStyle = {
-  backgroundColor: "#fff",
-  border: "1px solid hsl(220,13%,91%)",
-  borderRadius: "12px",
-  color: "hsl(220,30%,15%)",
-  fontSize: "12px",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.06)",
-};
-
 const AccountDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: account, isLoading } = useAccount(id || "");
   const { data: transactions } = useTransactions(id);
   const { data: alerts } = useAlerts(id);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const blockMutation = useBlockAccount();
+  const investigateMutation = useLaunchInvestigation();
+  const [confirmAction, setConfirmAction] = useState<"block" | "investigate" | null>(null);
 
   if (isLoading) return <DashboardLayout><div className="flex h-64 items-center justify-center text-muted-foreground">Loading...</div></DashboardLayout>;
   if (!account) return <DashboardLayout><div className="flex h-64 items-center justify-center text-muted-foreground">Account not found</div></DashboardLayout>;
@@ -58,6 +52,15 @@ const AccountDetailPage = () => {
   const uniqueDevices = new Set(transactions?.map((tx) => tx.device_id).filter(Boolean) || []);
   const uniqueLocations = new Set(transactions?.map((tx) => tx.geo_location).filter(Boolean) || []);
   const channelCount = new Set(transactions?.map((tx) => tx.channel) || []).size;
+  const status = (account as any).status || "active";
+  const canAct = status === "active";
+
+  const handleConfirm = () => {
+    if (!confirmAction || !id) return;
+    if (confirmAction === "block") blockMutation.mutate(id);
+    else investigateMutation.mutate(id);
+    setConfirmAction(null);
+  };
 
   return (
     <DashboardLayout>
@@ -67,18 +70,34 @@ const AccountDetailPage = () => {
 
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{account.account_holder_name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground">{account.account_holder_name}</h1>
+            <StatusBadge status={status} />
+          </div>
           <p className="font-mono text-sm text-muted-foreground">{account.account_number} · {account.account_type}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setDrawerOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
           >
             <Brain className="h-4 w-4" /> AI Analysis
           </button>
-          {account.is_flagged && (
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-critical/10 px-3 py-1.5 text-sm font-bold text-critical">⚠ FLAGGED</span>
+          {canAct && (
+            <>
+              <button
+                onClick={() => setConfirmAction("block")}
+                className="inline-flex items-center gap-2 rounded-xl bg-critical/10 px-4 py-2 text-sm font-medium text-critical hover:bg-critical/20 transition-colors"
+              >
+                <Ban className="h-4 w-4" /> Block Account
+              </button>
+              <button
+                onClick={() => setConfirmAction("investigate")}
+                className="inline-flex items-center gap-2 rounded-xl bg-warning/10 px-4 py-2 text-sm font-medium text-warning hover:bg-warning/20 transition-colors"
+              >
+                <Search className="h-4 w-4" /> Launch Investigation
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -121,12 +140,8 @@ const AccountDetailPage = () => {
           <p className="text-xs text-foreground">{uniqueLocations.size} unique</p>
         </div>
         <div className="rounded-xl border border-border bg-secondary/30 p-3">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Channel Risk Weights</span>
-          <div className="mt-1 flex gap-1 flex-wrap">
-            {Object.entries(CHANNEL_WEIGHTS).map(([ch, w]) => (
-              <span key={ch} className="text-[9px] font-mono text-muted-foreground">{ch.slice(0, 3)}:{w}</span>
-            ))}
-          </div>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Channels Used</span>
+          <p className="mt-1 text-xs font-bold text-foreground">{channelCount} channels</p>
         </div>
       </div>
 
@@ -153,9 +168,9 @@ const AccountDetailPage = () => {
           {channelDist.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={channelDist}>
-                <XAxis dataKey="name" tick={{ fill: "hsl(220,10%,50%)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "hsl(220,10%,50%)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))", fontSize: "12px" }} />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {channelDist.map((entry) => <Cell key={entry.name} fill={CHANNEL_COLORS[entry.name] || "hsl(217,91%,55%)"} />)}
                 </Bar>
@@ -215,7 +230,7 @@ const AccountDetailPage = () => {
                 <SeverityBadge severity={alert.severity} />
                 <div>
                   <p className="text-sm text-foreground">{alert.description}</p>
-                  <p className="text-xs text-muted-foreground">{alert.alert_type} · {new Date(alert.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{formatRiskType(alert.alert_type)} · {new Date(alert.created_at).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -231,6 +246,18 @@ const AccountDetailPage = () => {
         transactionCount={transactions?.length || 0}
         channelCount={channelCount}
         alertCount={alerts?.length || 0}
+      />
+
+      <ConfirmDialog
+        open={!!confirmAction}
+        onOpenChange={() => setConfirmAction(null)}
+        title={confirmAction === "block" ? "Block Account" : "Launch Investigation"}
+        description={confirmAction === "block"
+          ? "Are you sure you want to block this account? This will restrict all transactions."
+          : "Are you sure you want to launch an investigation on this account?"}
+        confirmLabel={confirmAction === "block" ? "Block Account" : "Launch Investigation"}
+        onConfirm={handleConfirm}
+        variant={confirmAction === "block" ? "destructive" : "default"}
       />
     </DashboardLayout>
   );

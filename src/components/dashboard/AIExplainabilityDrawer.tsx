@@ -225,7 +225,7 @@ const AIExplainabilityDrawer = ({
           </div>
           <div className="rounded-lg border border-border bg-secondary/20 p-3 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Model Version</p>
-            <p className="mt-1 text-sm font-bold text-primary">NetRisk AI v2.1</p>
+            <p className="mt-1 text-sm font-bold text-primary">NetRisk v2.1</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">GNN + Temporal</p>
           </div>
         </div>

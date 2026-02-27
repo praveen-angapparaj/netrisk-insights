@@ -84,7 +84,7 @@ const AuthPage = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk</h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-1">
-              Mule Detection AI Platform
+              Mule Detection Platform
             </p>
           </div>
         </div>
