@@ -35,10 +35,8 @@ const getRiskFactors = (
 ): RiskFactor[] => {
   const s = riskScore;
   const burstRatio = inward > 0 ? outward / inward : 0;
-
   const factors: RiskFactor[] = [];
 
-  // Velocity
   const velocityScore = Math.min(30, Math.round((txCount / 8) * 30));
   if (velocityScore > 5) {
     factors.push({
@@ -49,7 +47,6 @@ const getRiskFactors = (
     });
   }
 
-  // Device fingerprint
   const deviceScore = s > 60 ? Math.min(25, Math.round(s * 0.26)) : Math.round(s * 0.1);
   if (deviceScore > 3) {
     factors.push({
@@ -60,7 +57,6 @@ const getRiskFactors = (
     });
   }
 
-  // Circular movement
   const circularScore = s > 70 ? Math.min(15, Math.round(s * 0.16)) : Math.round(s * 0.05);
   if (circularScore > 2) {
     factors.push({
@@ -71,7 +67,6 @@ const getRiskFactors = (
     });
   }
 
-  // Imbalance
   const imbalanceScore = burstRatio > 0.7 ? Math.min(10, Math.round(burstRatio * 10)) : Math.round(s * 0.05);
   if (imbalanceScore > 1) {
     factors.push({
@@ -82,18 +77,16 @@ const getRiskFactors = (
     });
   }
 
-  // UPI burst
   const upiBurstScore = channelCount >= 3 ? Math.min(15, Math.round(channelCount * 4)) : Math.round(s * 0.08);
   if (upiBurstScore > 2) {
     factors.push({
-      label: `UPI burst within 5 minutes`,
+      label: "UPI burst within 5 minutes",
       score: upiBurstScore,
       icon: Zap,
       description: `${channelCount} distinct channels used in rapid succession. Pattern consistent with automated fraud tooling.`,
     });
   }
 
-  // Dormant
   if (dormant) {
     factors.push({
       label: "Dormant account reactivation",
@@ -151,7 +144,6 @@ const AIExplainabilityDrawer = ({
           </div>
         </SheetHeader>
 
-        {/* Account Info */}
         <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
           <p className="text-sm font-semibold text-foreground">{account.account_holder_name}</p>
           <p className="text-xs font-mono text-muted-foreground">{account.account_number}</p>
@@ -171,7 +163,6 @@ const AIExplainabilityDrawer = ({
           </div>
         </div>
 
-        {/* Risk Score */}
         <div className="mt-5 rounded-lg border border-border p-4 text-center">
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-2">Composite Risk Score</p>
           <div className="flex items-baseline justify-center gap-2">
@@ -179,13 +170,12 @@ const AIExplainabilityDrawer = ({
             <span className={`text-sm font-bold ${severity.color}`}>({severity.label})</span>
           </div>
           {account.is_flagged && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-md border border-critical/30 bg-critical/10 px-3 py-1 text-xs font-bold text-critical">
-              ⚠ FLAGGED FOR INVESTIGATION
+            <span className="mt-2 inline-flex items-center gap-1 rounded-md border border-critical/30 bg-critical/10 px-3 py-1 text-xs font-bold text-critical uppercase">
+              Flagged for Investigation
             </span>
           )}
         </div>
 
-        {/* Why Section */}
         <div className="mt-5">
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
@@ -217,7 +207,6 @@ const AIExplainabilityDrawer = ({
           </div>
         </div>
 
-        {/* Confidence & Model */}
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-lg border border-border bg-secondary/20 p-3 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Confidence Level</p>
@@ -230,7 +219,6 @@ const AIExplainabilityDrawer = ({
           </div>
         </div>
 
-        {/* Summary */}
         <div className="mt-5 rounded-lg border border-primary/20 bg-primary/5 p-4">
           <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">AI Summary</p>
           <p className="text-xs text-muted-foreground leading-relaxed">

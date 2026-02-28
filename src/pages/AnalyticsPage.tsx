@@ -5,15 +5,15 @@ import { useAlerts } from "@/hooks/useAlerts";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid, AreaChart, Area } from "recharts";
 
 const tooltipStyle = {
-  backgroundColor: "#fff",
-  border: "1px solid hsl(220,13%,91%)",
+  backgroundColor: "hsl(var(--card))",
+  border: "1px solid hsl(var(--border))",
   borderRadius: "12px",
-  color: "hsl(220,30%,15%)",
+  color: "hsl(var(--foreground))",
   fontSize: "12px",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.06)",
+  boxShadow: "0 4px 12px -2px hsl(var(--foreground) / 0.08)",
 };
 
-const axisTickStyle = { fill: "hsl(220,10%,50%)", fontSize: 11 };
+const axisTickStyle = { fill: "hsl(var(--muted-foreground))", fontSize: 11 };
 
 const AnalyticsPage = () => {
   const { data: accounts } = useAccounts();
@@ -117,7 +117,7 @@ const AnalyticsPage = () => {
     <DashboardLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Advanced Analytics</h1>
-        <p className="text-sm text-muted-foreground">Data-science grade fraud pattern analysis</p>
+        <p className="text-sm text-muted-foreground">Data-driven fraud pattern analysis</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -127,7 +127,7 @@ const AnalyticsPage = () => {
             <BarChart data={riskBuckets}>
               <XAxis dataKey="range" tick={axisTickStyle} axisLine={false} tickLine={false} />
               <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--secondary))" }} />
               <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                 {riskBuckets.map((b, i) => <Cell key={i} fill={b.color} />)}
               </Bar>
@@ -139,10 +139,10 @@ const AnalyticsPage = () => {
           <h2 className="text-sm font-semibold text-foreground mb-4">Fraud Trend Over Time</h2>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={fraudTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="hour" tick={axisTickStyle} axisLine={false} tickLine={false} />
               <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1 }} />
               <Area type="monotone" dataKey="alerts" stroke="hsl(0,72%,51%)" fill="hsl(0,72%,51%)" fillOpacity={0.1} strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
@@ -154,10 +154,10 @@ const AnalyticsPage = () => {
           <h2 className="text-sm font-semibold text-foreground mb-4">Transaction Volume (Last 24h)</h2>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={volumeData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="hour" tick={axisTickStyle} axisLine={false} tickLine={false} />
               <YAxis tick={axisTickStyle} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1 }} />
               <Line type="monotone" dataKey="count" stroke="hsl(217,91%,55%)" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -170,7 +170,7 @@ const AnalyticsPage = () => {
               <BarChart data={correlationData} layout="vertical">
                 <XAxis type="number" tick={axisTickStyle} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="pair" tick={{ ...axisTickStyle, fontSize: 9 }} axisLine={false} tickLine={false} width={100} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--secondary))" }} />
                 <Bar dataKey="count" fill="hsl(205,84%,52%)" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>

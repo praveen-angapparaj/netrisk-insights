@@ -12,9 +12,8 @@ const SimulatePage = () => {
 
   const seedMutation = useMutation({
     mutationFn: async () => {
-      setLogs(["🔄 Seeding database with sample accounts and transactions..."]);
+      setLogs(["[INFO] Seeding database with sample accounts and transactions..."]);
 
-      // Create 50 accounts
       const accountNames = [
         "Rajesh Kumar", "Priya Sharma", "Amit Patel", "Sunita Devi", "Vikram Singh",
         "Neha Gupta", "Suresh Yadav", "Kavita Joshi", "Rahul Verma", "Anita Mishra",
@@ -39,7 +38,7 @@ const SimulatePage = () => {
         total_outward_amount: 0,
         risk_score: 0,
         is_flagged: false,
-        dormant_flag: i >= 45, // Last 5 are dormant
+        dormant_flag: i >= 45,
       }));
 
       const { data: insertedAccounts, error: accErr } = await supabase
@@ -50,9 +49,8 @@ const SimulatePage = () => {
       if (accErr) throw accErr;
       if (!insertedAccounts) throw new Error("No accounts created");
 
-      setLogs((l) => [...l, `✅ Created ${insertedAccounts.length} accounts`]);
+      setLogs((l) => [...l, `[OK] Created ${insertedAccounts.length} accounts`]);
 
-      // Generate transactions
       const txns: Array<{
         from_account: string;
         to_account: string;
@@ -65,7 +63,6 @@ const SimulatePage = () => {
 
       const now = new Date();
 
-      // Normal transactions (200)
       for (let i = 0; i < 200; i++) {
         const from = insertedAccounts[Math.floor(Math.random() * 40)];
         let to = insertedAccounts[Math.floor(Math.random() * 40)];
@@ -85,7 +82,6 @@ const SimulatePage = () => {
         });
       }
 
-      // Mule chain 1: A→B→C→D→E (4-hop layering)
       const muleChain1 = insertedAccounts.slice(0, 5);
       for (let hop = 0; hop < 4; hop++) {
         for (let burst = 0; burst < 8; burst++) {
@@ -103,7 +99,6 @@ const SimulatePage = () => {
         }
       }
 
-      // Mule chain 2: F→G→H→I (3-hop)
       const muleChain2 = insertedAccounts.slice(10, 14);
       for (let hop = 0; hop < 3; hop++) {
         for (let burst = 0; burst < 6; burst++) {
@@ -121,7 +116,6 @@ const SimulatePage = () => {
         }
       }
 
-      // Cross-channel burst: One account using all 5 channels in 10 minutes
       const burstAccount = insertedAccounts[20];
       for (let i = 0; i < 10; i++) {
         const to = insertedAccounts[21 + (i % 5)];
@@ -137,7 +131,6 @@ const SimulatePage = () => {
         });
       }
 
-      // Dormant account reactivation
       const dormantAcc = insertedAccounts[45];
       for (let i = 0; i < 5; i++) {
         const to = insertedAccounts[Math.floor(Math.random() * 10)];
@@ -152,21 +145,17 @@ const SimulatePage = () => {
         });
       }
 
-      setLogs((l) => [...l, `📊 Inserting ${txns.length} transactions...`]);
+      setLogs((l) => [...l, `[INFO] Inserting ${txns.length} transactions...`]);
 
-      // Insert in batches
       for (let i = 0; i < txns.length; i += 50) {
         const batch = txns.slice(i, i + 50);
         const { error: txErr } = await supabase.from("transactions").insert(batch);
         if (txErr) throw txErr;
       }
 
-      setLogs((l) => [...l, `✅ Inserted ${txns.length} transactions`]);
+      setLogs((l) => [...l, `[OK] Inserted ${txns.length} transactions`]);
+      setLogs((l) => [...l, "[INFO] Calculating risk scores..."]);
 
-      // Calculate risk scores
-      setLogs((l) => [...l, "🧠 Calculating risk scores..."]);
-
-      // Count transactions per account and determine risk
       const txCountByAccount: Record<string, number> = {};
       const channelsByAccount: Record<string, Set<string>> = {};
       const inwardByAccount: Record<string, number> = {};
@@ -175,10 +164,8 @@ const SimulatePage = () => {
       txns.forEach((tx) => {
         txCountByAccount[tx.from_account] = (txCountByAccount[tx.from_account] || 0) + 1;
         txCountByAccount[tx.to_account] = (txCountByAccount[tx.to_account] || 0) + 1;
-
         if (!channelsByAccount[tx.from_account]) channelsByAccount[tx.from_account] = new Set();
         channelsByAccount[tx.from_account].add(tx.channel);
-
         outwardByAccount[tx.from_account] = (outwardByAccount[tx.from_account] || 0) + tx.amount;
         inwardByAccount[tx.to_account] = (inwardByAccount[tx.to_account] || 0) + tx.amount;
       });
@@ -196,21 +183,12 @@ const SimulatePage = () => {
         const inward = inwardByAccount[account.id] || 0;
         const outward = outwardByAccount[account.id] || 0;
 
-        // Velocity score
         const velocityScore = Math.min(100, (txCount / 5) * 20);
-
-        // Channel diversity score
         const channelScore = Math.min(100, (channelCount / 3) * 50);
-
-        // Burst ratio
         const burstRatio = inward > 0 ? (outward / inward) : 0;
         const burstScore = burstRatio > 0.8 ? Math.min(100, burstRatio * 60) : 0;
-
-        // Layering (simplified): if account is in mule chain
         const isMule = muleChain1.some((m) => m.id === account.id) || muleChain2.some((m) => m.id === account.id);
         const layeringScore = isMule ? 90 : Math.min(100, txCount * 3);
-
-        // Dormant
         const dormantScore = account.dormant_flag && txCount > 0 ? 80 : 0;
 
         const riskScore =
@@ -236,8 +214,6 @@ const SimulatePage = () => {
 
         if (isFlagged) {
           const severity = finalRisk > 90 ? "CRITICAL" : finalRisk > 80 ? "HIGH" : "MEDIUM";
-
-          // Determine alert type and build a realistic, scenario-specific description
           const isMuleChain1 = muleChain1.some((m) => m.id === account.id);
           const isMuleChain2 = muleChain2.some((m) => m.id === account.id);
           const isBurstAccount = account.id === burstAccount.id;
@@ -249,39 +225,26 @@ const SimulatePage = () => {
           if (isMuleChain1) {
             const hopIndex = muleChain1.findIndex((m) => m.id === account.id);
             alertType = "MULE_CHAIN";
-            const muleDescs = [
-              `Identified as origin node in 4-hop mule chain. ₹${outward.toLocaleString("en-IN")} disbursed across ${txCount} rapid transfers via ${Array.from(channelsByAccount[account.id] || []).join(", ")}. Funds traced through 4 downstream accounts within 20 minutes.`,
-              `Intermediary node (hop ${hopIndex + 1}/4) in layering chain. Received ₹${inward.toLocaleString("en-IN")} and forwarded ${Math.round((outward / Math.max(inward, 1)) * 100)}% within minutes. Device ID ${`MULE_DEV_${hopIndex}`} used exclusively for these transfers.`,
-              `Pass-through account in suspected mule network. ${txCount} transactions detected with ${channelCount} distinct channels. Burst ratio ${Math.round((outward / Math.max(inward, 1)) * 100)}% indicates rapid fund movement with no legitimate holding pattern.`,
-              `Terminal node in 4-hop layering chain. Accumulated ₹${inward.toLocaleString("en-IN")} from upstream mule accounts. Transaction velocity of ${txCount} ops in <30 min exceeds normal account behavior by 12x.`,
-              `Mid-chain mule account receiving structured deposits from hop ${Math.max(0, hopIndex - 1) + 1} and dispersing to hop ${Math.min(4, hopIndex + 1) + 1}. Cross-channel mixing detected: ${Array.from(channelsByAccount[account.id] || []).join(" → ")}.`,
-            ];
-            description = muleDescs[hopIndex] || muleDescs[2];
+            description = `Multi-hop mule chain detected (hop ${hopIndex + 1}/4). ${txCount} rapid transfers via ${Array.from(channelsByAccount[account.id] || []).join(", ")}. Outflow: INR ${outward.toLocaleString("en-IN")}.`;
           } else if (isMuleChain2) {
             const hopIndex = muleChain2.findIndex((m) => m.id === account.id);
             alertType = "MULE_CHAIN";
-            const mule2Descs = [
-              `Source account in secondary 3-hop mule network. ₹${outward.toLocaleString("en-IN")} pushed through ${txCount} transactions in rapid succession. Geographic origin: ${cities[hopIndex + 3]}, India. Device fingerprint MULE2_DEV_${hopIndex} linked to known fraud cluster.`,
-              `Central relay in 3-hop fund layering scheme. Received ₹${inward.toLocaleString("en-IN")} via ${Array.from(channelsByAccount[account.id] || []).join(", ")} and disbursed ${Math.round((outward / Math.max(inward, 1)) * 100)}% within 9 minutes. Pattern consistent with professional mule operation.`,
-              `End-point collection account in 3-hop chain. ${txCount} inbound transfers totaling ₹${inward.toLocaleString("en-IN")} received from intermediary mule. No outward activity suggests cash-out phase via ATM or branch withdrawal.`,
-              `Intermediary mule account with anomalous transaction pattern. Fund transit time < 3 minutes between receipt and forwarding. ${channelCount} channels used to obfuscate trail.`,
-            ];
-            description = mule2Descs[hopIndex] || mule2Descs[1];
+            description = `Secondary mule network (hop ${hopIndex + 1}/3). ${txCount} transactions, INR ${outward.toLocaleString("en-IN")} transferred.`;
           } else if (isBurstAccount) {
             alertType = "BURST_ACTIVITY";
-            description = `Cross-channel burst attack detected: ${txCount} transactions across ${channelCount} channels (${Array.from(channelsByAccount[account.id] || []).join(", ")}) within 10 minutes. Total outflow ₹${outward.toLocaleString("en-IN")} distributed to 5 recipient accounts. Pattern indicates automated fraud tool or compromised credentials.`;
+            description = `Cross-channel burst: ${txCount} transactions across ${channelCount} channels within 10 minutes. Total outflow INR ${outward.toLocaleString("en-IN")}.`;
           } else if (isDormantReactivation) {
             alertType = "DORMANT_REACTIVATION";
-            description = `Dormant account suddenly reactivated after extended inactivity period. ${txCount} high-value transactions totaling ₹${outward.toLocaleString("en-IN")} initiated via UPI. Average transaction amount ₹${Math.round(outward / Math.max(txCount, 1)).toLocaleString("en-IN")} significantly exceeds historical account behavior. Possible account takeover or recruited mule.`;
+            description = `Dormant account reactivated. ${txCount} high-value transactions totaling INR ${outward.toLocaleString("en-IN")} via UPI.`;
           } else if (velocityScore > 60 && channelScore > 40) {
             alertType = "VELOCITY_ANOMALY";
-            description = `Unusual transaction velocity: ${txCount} operations detected across ${channelCount} channels within monitoring window. Outward flow ₹${outward.toLocaleString("en-IN")} with ${Math.round((outward / Math.max(inward, 1)) * 100)}% disbursement ratio. Behavioral pattern deviates from account baseline by ${Math.round(velocityScore / 10)}x standard deviation.`;
+            description = `Transaction velocity anomaly: ${txCount} operations across ${channelCount} channels. Disbursement ratio ${Math.round((outward / Math.max(inward, 1)) * 100)}%.`;
           } else if (burstScore > 50) {
             alertType = "RAPID_DISBURSEMENT";
-            description = `Rapid fund disbursement detected: ${Math.round((outward / Math.max(inward, 1)) * 100)}% of received funds (₹${inward.toLocaleString("en-IN")}) transferred out within short window. ${channelCount > 2 ? `Multiple channels (${Array.from(channelsByAccount[account.id] || []).join(", ")}) used to distribute funds.` : "Single channel used for bulk transfer."} Risk pattern consistent with money laundering layering stage.`;
+            description = `Rapid fund disbursement: ${Math.round((outward / Math.max(inward, 1)) * 100)}% of received funds transferred out.`;
           } else {
             alertType = "RISK_THRESHOLD";
-            description = `Composite risk score ${finalRisk} exceeds threshold. Contributing factors: velocity ${Math.round(velocityScore)}%, channel diversity ${Math.round(channelScore)}%, burst ratio ${Math.round(burstScore)}%, layering ${Math.round(layeringScore)}%. Account requires manual investigation by compliance team.`;
+            description = `Composite risk score ${finalRisk} exceeds threshold. Velocity: ${Math.round(velocityScore)}%, Channels: ${Math.round(channelScore)}%, Burst: ${Math.round(burstScore)}%.`;
           }
 
           alertsToInsert.push({
@@ -298,23 +261,22 @@ const SimulatePage = () => {
         if (alertErr) throw alertErr;
       }
 
-      setLogs((l) => [...l, `🚨 Generated ${alertsToInsert.length} alerts`, "✅ Simulation complete!"]);
+      setLogs((l) => [...l, `[ALERT] Generated ${alertsToInsert.length} alerts`, "[OK] Simulation complete"]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
-      toast.success("Fraud simulation complete!");
+      toast.success("Fraud simulation complete");
     },
     onError: (err: Error) => {
-      setLogs((l) => [...l, `❌ Error: ${err.message}`]);
+      setLogs((l) => [...l, `[ERROR] ${err.message}`]);
       toast.error(`Simulation failed: ${err.message}`);
     },
   });
 
   const burstMutation = useMutation({
     mutationFn: async () => {
-      setLogs(["⚡ Simulating fraud burst..."]);
+      setLogs(["[INFO] Simulating fraud burst..."]);
 
-      // Get some existing accounts
       const { data: accounts, error } = await supabase
         .from("accounts")
         .select("id, account_number")
@@ -328,7 +290,6 @@ const SimulatePage = () => {
       const channels = ["UPI", "ATM", "NET_BANKING", "MOBILE_BANKING", "BRANCH"];
       const txns = [];
 
-      // Rapid burst: 15 transactions in 5 minutes across multiple channels
       for (let i = 0; i < 15; i++) {
         const from = accounts[0];
         const to = accounts[1 + (i % 4)];
@@ -346,16 +307,14 @@ const SimulatePage = () => {
       const { error: txErr } = await supabase.from("transactions").insert(txns);
       if (txErr) throw txErr;
 
-      setLogs((l) => [...l, `📊 Inserted ${txns.length} burst transactions`]);
+      setLogs((l) => [...l, `[INFO] Inserted ${txns.length} burst transactions`]);
 
-      // Update risk score for burst account
       const riskScore = 95;
       await supabase
         .from("accounts")
         .update({ risk_score: riskScore, is_flagged: true })
         .eq("id", accounts[0].id);
 
-      // Create alert
       await supabase.from("alerts").insert({
         account_id: accounts[0].id,
         alert_type: "BURST_ACTIVITY",
@@ -363,14 +322,14 @@ const SimulatePage = () => {
         description: `Rapid cross-channel burst: 15 transactions in 5 minutes across ${channels.length} channels. Account ${accounts[0].account_number}`,
       });
 
-      setLogs((l) => [...l, "🚨 Critical alert generated!", "✅ Burst simulation complete!"]);
+      setLogs((l) => [...l, "[ALERT] Critical alert generated", "[OK] Burst simulation complete"]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
-      toast.success("Fraud burst simulated!");
+      toast.success("Fraud burst simulated");
     },
     onError: (err: Error) => {
-      setLogs((l) => [...l, `❌ Error: ${err.message}`]);
+      setLogs((l) => [...l, `[ERROR] ${err.message}`]);
       toast.error(err.message);
     },
   });
@@ -436,7 +395,7 @@ const SimulatePage = () => {
           <h2 className="text-sm font-semibold text-foreground mb-3">Simulation Log</h2>
           <div className="space-y-1 font-mono text-xs max-h-64 overflow-y-auto">
             {logs.map((log, i) => (
-              <div key={i} className={`py-1 ${log.includes("❌") ? "text-critical" : log.includes("✅") ? "text-success" : "text-muted-foreground"}`}>
+              <div key={i} className={`py-1 ${log.includes("[ERROR]") ? "text-critical" : log.includes("[OK]") ? "text-success" : log.includes("[ALERT]") ? "text-warning" : "text-muted-foreground"}`}>
                 {log}
               </div>
             ))}

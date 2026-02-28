@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatRiskType } from "@/lib/formatRiskType";
 import { useBlockAccount, useLaunchInvestigation } from "@/hooks/useAccountActions";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
+import { Button } from "@/components/ui/button";
 
 const AlertsPage = () => {
   const { data: alerts, isLoading } = useAlerts();
@@ -67,9 +68,8 @@ const AlertsPage = () => {
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Account</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Risk Score</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Risk Type</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Severity</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Priority</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Trigger Time</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground max-w-[200px]">Description</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Actions</th>
             </tr>
           </thead>
@@ -83,28 +83,31 @@ const AlertsPage = () => {
                     <div className={`w-1 h-8 rounded-r-full ${severityColor}`} />
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-primary">
-                    {acct ? <Link to={`/accounts/${acct.id}`} className="hover:underline">{acct.account_number}</Link> : "—"}
+                    {acct ? <Link to={`/accounts/${acct.id}`} className="hover:underline">{acct.account_number}</Link> : "\u2014"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs font-bold text-foreground">{acct ? Number(acct.risk_score) : "—"}</td>
+                  <td className="px-4 py-3 font-mono text-xs font-bold text-foreground">{acct ? Number(acct.risk_score) : "\u2014"}</td>
                   <td className="px-4 py-3 text-xs text-foreground">{formatRiskType(alert.alert_type)}</td>
                   <td className="px-4 py-3"><SeverityBadge severity={alert.severity} /></td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(alert.created_at).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-xs text-foreground max-w-[200px] truncate">{alert.description}</td>
                   <td className="px-4 py-3">
                     {acct && ((acct as any).status === "active" || !(acct as any).status) && (
                       <div className="flex gap-2">
-                        <button
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-7 px-3 text-[10px] font-bold rounded-lg"
                           onClick={() => setConfirmAction({ type: "block", accountId: acct.id })}
-                          className="rounded-lg bg-critical/10 px-2 py-1 text-[10px] font-bold text-critical hover:bg-critical/20 transition-colors"
                         >
-                          Block
-                        </button>
-                        <button
+                          Block Account
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-3 text-[10px] font-bold rounded-lg"
                           onClick={() => setConfirmAction({ type: "investigate", accountId: acct.id })}
-                          className="rounded-lg bg-warning/10 px-2 py-1 text-[10px] font-bold text-warning hover:bg-warning/20 transition-colors"
                         >
                           Investigate
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </td>
@@ -112,7 +115,7 @@ const AlertsPage = () => {
               );
             })}
             {!isLoading && filteredAlerts.length === 0 && (
-              <tr><td colSpan={8} className="py-12 text-center text-muted-foreground">No alerts</td></tr>
+              <tr><td colSpan={7} className="py-12 text-center text-muted-foreground">No alerts</td></tr>
             )}
           </tbody>
         </table>

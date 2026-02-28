@@ -5,6 +5,7 @@ import AIExplainabilityDrawer from "@/components/dashboard/AIExplainabilityDrawe
 import { useAccounts } from "@/hooks/useAccounts";
 import { useAllTransactions } from "@/hooks/useTransactions";
 import { useAlerts } from "@/hooks/useAlerts";
+import { useTheme } from "@/hooks/useTheme";
 import cytoscape from "cytoscape";
 import { Search, Brain } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -33,11 +34,14 @@ const GraphPage = () => {
   const { data: accounts } = useAccounts();
   const { data: transactions } = useAllTransactions();
   const { data: allAlerts } = useAlerts();
+  const { theme } = useTheme();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerAccountId, setDrawerAccountId] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState([0]);
+
+  const isDark = theme === "dark";
 
   const defaultAccountId = useMemo(() => {
     if (!accounts || accounts.length === 0) return null;
@@ -122,6 +126,9 @@ const GraphPage = () => {
     if (!containerRef.current || !accounts || !transactions || !activeAccountId) return;
     if (cyRef.current) cyRef.current.destroy();
 
+    const labelColor = isDark ? "#94A3B8" : "#475569";
+    const edgeDefault = isDark ? "#475569" : "#CBD5E1";
+
     const elements: cytoscape.ElementDefinition[] = [];
     const graphAccounts = accounts.filter((a) => involvedAccountIds.has(a.id));
 
@@ -159,9 +166,9 @@ const GraphPage = () => {
         {
           selector: "node",
           style: {
-            label: "data(label)", "background-color": NODE_COLORS.normal, color: "#475569",
+            label: "data(label)", "background-color": NODE_COLORS.normal, color: labelColor,
             "font-size": "9px", "text-valign": "bottom", "text-margin-y": 8, "text-wrap": "wrap", "text-max-width": "80px",
-            width: 30, height: 30, "border-width": 2, "border-color": "#CBD5E1", "font-family": "JetBrains Mono, monospace",
+            width: 30, height: 30, "border-width": 2, "border-color": edgeDefault, "font-family": "JetBrains Mono, monospace",
           },
         },
         { selector: "node[nodeType='center']", style: { "background-color": NODE_COLORS.center, "border-color": "#6D28D9", width: 50, height: 50, "border-width": 4, "font-size": "11px" } },
@@ -171,7 +178,7 @@ const GraphPage = () => {
         { selector: "node[nodeType='dormant']", style: { "background-color": NODE_COLORS.dormant, "border-color": "#FDE047", width: 32, height: 32 } },
         {
           selector: "edge",
-          style: { width: 1.5, "line-color": "#CBD5E1", "target-arrow-color": "#CBD5E1", "target-arrow-shape": "triangle", "curve-style": "bezier", "arrow-scale": 0.8, opacity: 0.6 },
+          style: { width: 1.5, "line-color": edgeDefault, "target-arrow-color": edgeDefault, "target-arrow-shape": "triangle", "curve-style": "bezier", "arrow-scale": 0.8, opacity: 0.6 },
         },
         { selector: "edge[channel='UPI']", style: { "line-color": "#3B82F6", "target-arrow-color": "#3B82F6" } },
         { selector: "edge[channel='ATM']", style: { "line-color": "#F59E0B", "target-arrow-color": "#F59E0B" } },
@@ -198,7 +205,7 @@ const GraphPage = () => {
       const type = e.target.data("nodeType");
       e.target.style("border-width", type === "center" ? 4 : type === "flagged" || type === "muleSuspect" ? 3 : 2);
     });
-  }, [accounts, transactions, activeAccountId, involvedAccountIds, relevantTransactions, getNodeType]);
+  }, [accounts, transactions, activeAccountId, involvedAccountIds, relevantTransactions, getNodeType, isDark]);
 
   useEffect(() => {
     buildGraph();
@@ -211,7 +218,7 @@ const GraphPage = () => {
     <DashboardLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Transaction Network Graph</h1>
-        <p className="text-sm text-muted-foreground">Select an account to view its transaction network · Double-click for AI analysis</p>
+        <p className="text-sm text-muted-foreground">Select an account to view its transaction network. Double-click for AI analysis.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -279,7 +286,7 @@ const GraphPage = () => {
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${Number(activeAccount.risk_score) >= 70 ? "bg-critical/10 text-critical" : "bg-success/10 text-success"}`}>
                     Risk: {Number(activeAccount.risk_score).toFixed(0)}
                   </span>
-                  {activeAccount.is_flagged && <span className="text-xs font-bold text-critical">⚠ FLAGGED</span>}
+                  {activeAccount.is_flagged && <span className="text-xs font-bold text-critical uppercase">Flagged</span>}
                 </div>
                 <div className="flex items-center gap-4">
                   {Object.entries(CHANNEL_EDGE_COLORS).map(([ch, color]) => (
@@ -306,7 +313,11 @@ const GraphPage = () => {
             </span>
           </div>
 
-          <div ref={containerRef} className="h-[560px] w-full" style={{ background: "#F8FAFC" }} />
+          <div
+            ref={containerRef}
+            className="h-[560px] w-full"
+            style={{ background: isDark ? "hsl(222, 28%, 13%)" : "hsl(220, 20%, 97%)" }}
+          />
         </div>
       </div>
 
