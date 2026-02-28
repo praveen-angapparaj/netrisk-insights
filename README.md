@@ -31,6 +31,18 @@ Backend: Node.js
 
 Database: PostgreSQL, Neo4j
 
+User-Interface Images:
+I have attached the UI images in REFERENCE_IMAGES folder in repo.
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Accounts.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Alerts.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Analytics.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Login Page.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Network Graph.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Reports.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Settings.png
+C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Simulation.png
+Kindly check it out.
+
 🚀 How to Run Locally
 We have built a fully functional prototype of the NetRisk UI. Follow these steps to spin it up on your local machine:
 
@@ -38,7 +50,7 @@ Clone the repository:
 
 Bash
 git clone https://github.com/praveen-angapparaj/netrisk-insights.git
-cd netrisk-hackathon
+cd netrisk-insights
 Install dependencies:
 
 Bash
