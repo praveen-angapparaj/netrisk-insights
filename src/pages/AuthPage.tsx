@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Shield, Eye, EyeOff, Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme } from "@/hooks/useTheme";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -38,15 +40,12 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Try edge function first, fall back to local env var for self-hosted setups
       let codeValid = false;
       const localCode = import.meta.env.VITE_NETRISK_ACCESS_CODE;
-      
+
       if (localCode) {
-        // Self-hosted: verify against local environment variable
         codeValid = accessCode === localCode;
       } else {
-        // Cloud: verify via edge function
         const { data: codeResult, error: codeError } = await supabase.functions.invoke("verify-access-code", {
           body: { code: accessCode },
         });
@@ -66,7 +65,7 @@ const AuthPage = () => {
         },
       });
       if (error) throw error;
-      toast.success("Account created! Check your email to verify your account.");
+      toast.success("Account created. Check your email to verify your account.");
     } catch (error: any) {
       toast.error(error.message || "Signup failed");
     } finally {
@@ -75,16 +74,29 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+      {/* Theme toggle */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 p-2 rounded-xl hover:bg-secondary transition-colors"
+        title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        {theme === "dark" ? (
+          <Sun className="h-5 w-5 text-warning" />
+        ) : (
+          <Moon className="h-5 w-5 text-muted-foreground" />
+        )}
+      </button>
+
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground card-shadow-lg">
             <Shield className="h-8 w-8" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk AI Platform</h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-1">
-              Mule Detection Platform
+              Cross-Channel Mule Detection
             </p>
           </div>
         </div>
@@ -133,7 +145,7 @@ const AuthPage = () => {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -156,7 +168,7 @@ const AuthPage = () => {
                   <Input
                     id="accessCode"
                     type="password"
-                    placeholder="Enter secret access code"
+                    placeholder="Enter access code"
                     value={accessCode}
                     onChange={(e) => setAccessCode(e.target.value)}
                     required
@@ -187,7 +199,7 @@ const AuthPage = () => {
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
-          Restricted access · Authorized personnel only
+          Restricted access. Authorized personnel only.
         </p>
       </div>
     </div>

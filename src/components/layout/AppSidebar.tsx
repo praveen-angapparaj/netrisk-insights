@@ -8,6 +8,8 @@ import {
   Zap,
   Shield,
   ChevronRight,
+  FileText,
+  Settings,
 } from "lucide-react";
 
 const navItems = [
@@ -16,7 +18,9 @@ const navItems = [
   { to: "/graph", icon: Network, label: "Network Graph" },
   { to: "/alerts", icon: AlertTriangle, label: "Alerts" },
   { to: "/analytics", icon: Activity, label: "Analytics" },
+  { to: "/reports", icon: FileText, label: "Reports" },
   { to: "/simulate", icon: Zap, label: "Simulation" },
+  { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
 const AppSidebar = () => {

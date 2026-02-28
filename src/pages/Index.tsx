@@ -86,13 +86,13 @@ const Index = () => {
                             onClick={() => setConfirmAction({ type: "block", accountId: account.id })}
                             className="rounded-lg bg-critical/10 px-2.5 py-1 text-[10px] font-bold text-critical hover:bg-critical/20 transition-colors"
                           >
-                            🚫 Block
+                            Block
                           </button>
                           <button
                             onClick={() => setConfirmAction({ type: "investigate", accountId: account.id })}
                             className="rounded-lg bg-warning/10 px-2.5 py-1 text-[10px] font-bold text-warning hover:bg-warning/20 transition-colors"
                           >
-                            🔍 Investigate
+                            Investigate
                           </button>
                         </>
                       )}
@@ -135,9 +135,9 @@ const Index = () => {
                     <div className={`w-1 h-8 rounded-r-full ${severityColor}`} />
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-primary">
-                    {acct ? <Link to={`/accounts/${acct.id}`} className="hover:underline">{acct.account_number}</Link> : "—"}
+                    {acct ? <Link to={`/accounts/${acct.id}`} className="hover:underline">{acct.account_number}</Link> : "\u2014"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs font-bold text-foreground">{acct ? Number(acct.risk_score) : "—"}</td>
+                  <td className="px-4 py-3 font-mono text-xs font-bold text-foreground">{acct ? Number(acct.risk_score) : "\u2014"}</td>
                   <td className="px-4 py-3 text-xs text-foreground">{formatRiskType(alert.alert_type)}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(alert.created_at).toLocaleString()}</td>
                   <td className="px-4 py-3"><SeverityBadge severity={alert.severity} /></td>
@@ -179,14 +179,13 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <MetricCard title="Total Accounts" value={stats?.totalAccounts ?? "—"} icon={Users} variant="default" />
-        <MetricCard title="Total Transactions" value={stats?.totalTransactions ?? "—"} icon={ArrowLeftRight} variant="default" />
-        <MetricCard title="High Risk" value={stats?.highRiskAccounts ?? "—"} icon={ShieldAlert} variant="danger" subtitle="Flagged accounts" />
-        <MetricCard title="Critical Alerts" value={stats?.criticalAlerts ?? "—"} icon={AlertTriangle} variant="warning" />
+        <MetricCard title="Total Accounts" value={stats?.totalAccounts ?? "\u2014"} icon={Users} variant="default" />
+        <MetricCard title="Total Transactions" value={stats?.totalTransactions ?? "\u2014"} icon={ArrowLeftRight} variant="default" />
+        <MetricCard title="High Risk" value={stats?.highRiskAccounts ?? "\u2014"} icon={ShieldAlert} variant="danger" subtitle="Flagged accounts" />
+        <MetricCard title="Critical Alerts" value={stats?.criticalAlerts ?? "\u2014"} icon={AlertTriangle} variant="warning" />
         <MetricCard title="Cross-Channel" value={`${stats?.crossChannelPct ?? 0}%`} icon={Radio} variant="info" subtitle="Channel diversity" />
       </div>
 
-      {/* Tabs */}
       <Tabs defaultValue="active" className="mb-6">
         <TabsList className="bg-secondary/50 rounded-xl p-1">
           <TabsTrigger value="active" className="rounded-lg text-xs">Active Accounts ({activeAccounts.length})</TabsTrigger>
@@ -208,7 +207,7 @@ const Index = () => {
         <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5 card-shadow">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-foreground">Top Risk Accounts</h2>
-            <Link to="/accounts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">View all →</Link>
+            <Link to="/accounts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">View all</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -216,7 +215,7 @@ const Index = () => {
                 <tr className="border-b border-border text-left">
                   <th className="pb-3 text-xs font-medium text-muted-foreground">Account</th>
                   <th className="pb-3 text-xs font-medium text-muted-foreground">Holder</th>
-                  <th className="pb-3 text-xs font-medium text-muted-foreground">Risk Score</th>
+                  <th className="pb-3 text-xs font-medium text-muted-foreground w-36">Risk Score</th>
                   <th className="pb-3 text-xs font-medium text-muted-foreground">Status</th>
                 </tr>
               </thead>
