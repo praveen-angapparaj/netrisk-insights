@@ -31,6 +31,8 @@ Backend: Node.js
 
 Database: PostgreSQL, Neo4j
 
+ORGANISATION ACCESS CODE:'thinktank'
+
 User-Interface Images:
 I have attached the UI images in REFERENCE_IMAGES folder in repo.
 C:\Users\Praveen A\Desktop\JAVASCRIPT\netrisk-insights\REFERENCE_IMAGES\Accounts.png
