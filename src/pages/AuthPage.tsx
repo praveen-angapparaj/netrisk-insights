@@ -101,17 +101,17 @@ const AuthPage = () => {
       </button>
 
       <div className="w-full max-w-md space-y-8 relative z-10">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 drop-shadow-[0_4px_24px_rgba(0,0,0,0.25)] dark:drop-shadow-[0_4px_24px_rgba(255,255,255,0.15)]">
           <img src={logoImg} alt="NetRisk Logo" className="h-16 w-16 object-contain" />
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk AI Platform</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight drop-shadow-sm">NetRisk AI Platform</h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-1">
               Cross-Channel Mule Detection
             </p>
           </div>
         </div>
 
-        <Card className="border-border card-shadow-lg rounded-2xl">
+        <Card className="border-border/50 rounded-2xl backdrop-blur-md bg-card/80 shadow-[0_8px_40px_rgba(0,0,0,0.3)] dark:shadow-[0_8px_40px_rgba(255,255,255,0.08)]">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg">{isLogin ? "Welcome back" : "Request Access"}</CardTitle>
             <CardDescription>
