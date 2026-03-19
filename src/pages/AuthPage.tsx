@@ -91,9 +91,7 @@ const AuthPage = () => {
 
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground card-shadow-lg">
-            <Shield className="h-8 w-8" />
-          </div>
+          <img src={logoImg} alt="NetRisk Logo" className="h-16 w-16 object-contain" />
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground tracking-tight">NetRisk AI Platform</h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-1">

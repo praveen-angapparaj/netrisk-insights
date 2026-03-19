@@ -30,9 +30,7 @@ const AppSidebar = () => {
     <aside className="fixed left-0 top-0 z-40 h-screen w-[260px] border-r border-border bg-sidebar flex flex-col">
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <Shield className="h-5 w-5" />
-        </div>
+        <img src={logoImg} alt="NetRisk Logo" className="h-10 w-10 object-contain" />
         <div>
           <h1 className="text-base font-bold text-foreground tracking-tight">NetRisk</h1>
           <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Mule Detection Platform</p>
