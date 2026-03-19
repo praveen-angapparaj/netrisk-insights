@@ -75,11 +75,22 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Video background */}
+      <video
+        key={theme}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        src={theme === "dark" ? "/videos/dark_gradient.mp4" : "/videos/gradient_light.mp4"}
+      />
+
       {/* Theme toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2 rounded-xl hover:bg-secondary transition-colors"
+        className="absolute top-4 right-4 z-20 p-2 rounded-xl hover:bg-secondary/50 transition-colors backdrop-blur-sm"
         title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       >
         {theme === "dark" ? (
@@ -89,7 +100,7 @@ const AuthPage = () => {
         )}
       </button>
 
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="flex flex-col items-center gap-4">
           <img src={logoImg} alt="NetRisk Logo" className="h-16 w-16 object-contain" />
           <div className="text-center">
