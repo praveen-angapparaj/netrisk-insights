@@ -6,11 +6,11 @@ import {
   AlertTriangle,
   Activity,
   Zap,
-  Shield,
   ChevronRight,
   FileText,
   Settings,
 } from "lucide-react";
+import logoImg from "@/assets/logo.webp";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
