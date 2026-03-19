@@ -9,11 +9,19 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      {/* Background image */}
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/dashboard-bg.jpg')" }}
+      />
+      {/* Overlay for readability */}
+      <div className="fixed inset-0 z-0 bg-background/85 dark:bg-background/80" />
+
       <AppSidebar />
 
       {/* Top Navbar */}
-      <div className="ml-[260px] border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-30">
+      <div className="ml-[260px] border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30">
         <div className="flex items-center justify-end h-14 px-6">
           <div className="flex items-center gap-3">
             <button
@@ -37,7 +45,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </div>
       </div>
 
-      <main className="ml-[260px] min-h-[calc(100vh-3.5rem)]">
+      <main className="ml-[260px] min-h-[calc(100vh-3.5rem)] relative z-10">
         <div className="p-6 max-w-[1400px]">{children}</div>
       </main>
     </div>
